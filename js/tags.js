@@ -103,12 +103,17 @@ function updateHMI() {
     document.getElementById("tank").textContent =
         `${tags.waterTank.level}%`;
 
-    const tankLitres =
-        tags.waterTank.level * tags.waterTank.capacity / 100;
+    const tankLevel = Number(tags.waterTank.level.toFixed(1));
+
+    const tankLitres = Math.round(
+    tankLevel * tags.waterTank.capacity / 100
+);
+
+    document.getElementById("tank").textContent =
+    `${tankLevel}%`;
 
     document.getElementById("tank2").textContent =
-        `${tags.waterTank.level}% • ${tankLitres.toLocaleString()} L`;
-
+    `${tankLevel}% • ${tankLitres.toLocaleString()} L`;
 
     // Main flow
     document.getElementById("flow").textContent =
