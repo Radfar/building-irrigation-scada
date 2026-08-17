@@ -18,9 +18,29 @@ const tags = {
 
     // Pump station
     pump01: {
-        status: "RUNNING",
-        speed: 62,
-        frequency: 62
+
+    // Commands
+    startCommand: true,
+    stopCommand: false,
+
+    // Operating mode
+    mode: "AUTO",
+
+    // Status
+    runCommand: true,
+    runFeedback: true,
+    fault: false,
+
+    // Process values
+    speed: 62,
+    frequency: 62,
+
+    // Permissives
+    permissives: {
+        tankLevelOK: true,
+        emergencyStopOK: true,
+        noFault: true
+    }
     },
 
     // Irrigation zones
@@ -147,14 +167,135 @@ function simulateProcess() {
 
     updateHMI();
 }
+// ============================================================
+// PUMP CONTROL
+// ============================================================
+
+function startPump() {
+
+    const pump = tags.pump01;
+
+    // Check permissives before starting
+    if (!pump.permissives.tankLevelOK) {
+        alert("P-01 cannot start: Water tank level is too low.");
+        return;
+    }
+
+    if (!pump.permissives.emergencyStopOK) {
+        alert("P-01 cannot start: Emergency stop is active.");
+        return;
+    }
+
+    if (pump.fault) {
+        alert("P-01 cannot start: Pump fault is active.");
+        return;
+    }
+
+    pump.startCommand = true;
+    pump.stopCommand = false;
+
+    // Simulate motor starting
+    pump.runCommand = true;
+    pump.runFeedback = true;
+    pump.status = "RUNNING";
+
+    updatePumpFaceplate();
+    updateHMI();
+}
 
 
+function stopPump() {
+
+    const pump = tags.pump01;
+
+    pump.startCommand = false;
+    pump.stopCommand = true;
+
+    // Simulate motor stopping
+    pump.runCommand = false;
+    pump.runFeedback = false;
+    pump.status = "STOPPED";
+
+    updatePumpFaceplate();
+    updateHMI();
+}
+
+
+function togglePumpMode() {
+
+    const pump = tags.pump01;
+
+    if (pump.mode === "AUTO") {
+        pump.mode = "MANUAL";
+    } else {
+        pump.mode = "AUTO";
+    }
+
+    updatePumpFaceplate();
+}
+
+
+// ============================================================
+// PUMP FACEPLATE DISPLAY
+// ============================================================
+
+function updatePumpFaceplate() {
+
+    const pump = tags.pump01;
+
+    const modeElement =
+        document.getElementById("pump-mode");
+
+    const statusElement =
+        document.getElementById("pump-status");
+
+    const feedbackElement =
+        document.getElementById("pump-feedback");
+
+    const speedElement =
+        document.getElementById("pump-speed");
+
+    const frequencyElement =
+        document.getElementById("pump-frequency");
+
+    if (!modeElement) return;
+
+    modeElement.textContent = pump.mode;
+
+    statusElement.textContent =
+        pump.runCommand ? "RUNNING" : "STOPPED";
+
+    feedbackElement.textContent =
+        pump.runFeedback ? "RUN" : "OFF";
+
+    speedElement.textContent =
+        `${pump.speed}%`;
+
+    frequencyElement.textContent =
+        `${pump.frequency} Hz`;
+}
+function openPumpFaceplate() {
+
+    document.getElementById(
+        "pump-faceplate"
+    ).style.display = "block";
+
+    updatePumpFaceplate();
+}
+
+
+function closePumpFaceplate() {
+
+    document.getElementById(
+        "pump-faceplate"
+    ).style.display = "none";
+}
 // ============================================================
 // INITIALIZE
 // ============================================================
 
 updateHMI();
-
+updatePumpFaceplate();
 
 // Simulate the process every 2 seconds
 setInterval(simulateProcess, 2000);

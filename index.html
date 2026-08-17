@@ -70,6 +70,242 @@
   .low{color:var(--yellow)}.high{color:var(--red)}
   footer{color:#687891;font-size:10px;margin-top:16px}
   @media(max-width:1000px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}main{grid-template-columns:190px 1fr}}
+/* ============================================================
+   PUMP FACEPLATE
+============================================================ */
+
+.faceplate {
+
+    display: none;
+
+    position: fixed;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    width: 430px;
+
+    background: #121b2d;
+
+    border: 1px solid #34465f;
+
+    border-radius: 12px;
+
+    box-shadow: 0 20px 60px rgba(0,0,0,.6);
+
+    z-index: 1000;
+}
+
+
+.faceplate-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 16px 18px;
+
+    border-bottom: 1px solid #2a3852;
+}
+
+
+.faceplate-title {
+
+    font-size: 17px;
+
+    font-weight: 650;
+}
+
+
+.faceplate-subtitle {
+
+    font-size: 11px;
+
+    color: #91a0b8;
+
+    margin-top: 4px;
+}
+
+
+.faceplate-header button {
+
+    border: none;
+
+    background: transparent;
+
+    color: #91a0b8;
+
+    font-size: 18px;
+}
+
+
+.faceplate-body {
+
+    padding: 18px;
+}
+
+
+.faceplate-status {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 8px;
+}
+
+
+.status-block {
+
+    background: #172238;
+
+    border: 1px solid #2a3852;
+
+    border-radius: 8px;
+
+    padding: 11px;
+}
+
+
+.status-block span {
+
+    display: block;
+
+    color: #91a0b8;
+
+    font-size: 10px;
+
+    margin-bottom: 5px;
+}
+
+
+.status-block strong {
+
+    font-size: 13px;
+}
+
+
+.faceplate-section {
+
+    margin-top: 18px;
+}
+
+
+.faceplate-section h4 {
+
+    margin: 0 0 10px;
+
+    font-size: 12px;
+
+    color: #91a0b8;
+
+    text-transform: uppercase;
+
+    letter-spacing: .08em;
+}
+
+
+.faceplate-values {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 8px;
+}
+
+
+.faceplate-values div {
+
+    background: #172238;
+
+    padding: 10px;
+
+    border-radius: 8px;
+}
+
+
+.faceplate-values span {
+
+    display: block;
+
+    font-size: 10px;
+
+    color: #91a0b8;
+}
+
+
+.faceplate-values strong {
+
+    display: block;
+
+    margin-top: 5px;
+
+    font-size: 15px;
+}
+
+
+.permissive {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    padding: 9px 0;
+
+    border-bottom: 1px solid #233149;
+
+    font-size: 12px;
+}
+
+
+.good {
+
+    color: #39d98a;
+}
+
+
+.faceplate-controls {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr 1fr;
+
+    gap: 8px;
+}
+
+
+.faceplate-controls button {
+
+    padding: 10px;
+
+    font-size: 11px;
+
+    font-weight: 600;
+}
+
+
+.pump-start {
+
+    background: #174b38;
+
+    border-color: #277a5d;
+}
+
+
+.pump-stop {
+
+    background: #4b2229;
+
+    border-color: #7c343f;
+}
 </style>
 </head>
 <body>
@@ -134,7 +370,18 @@
         <div class="section-head"><h3>Irrigation System</h3><span class="status ok">AUTO</span></div>
         <div class="system">
           <div class="node tank"><strong>Water Tank</strong><small id="tank2">78% • 15,600 L</small></div>
-          <div class="node pump"><strong>P-01</strong><small>RUN • 62 Hz</small></div>
+          <div
+    class="node pump"
+    onclick="openPumpFaceplate()"
+    style="cursor:pointer">
+
+    <strong>P-01</strong>
+
+    <small id="pump-node-status">
+        RUN • 62 Hz
+    </small>
+
+</div>
           <div class="node manifold"><strong>Main Header</strong><small>42.6 L/min</small></div>
           <div class="pipe p1 pulse"></div><div class="pipe p2 pulse"></div>
         </div>
@@ -197,5 +444,149 @@ setInterval(()=>{
 </script>
 
 <script src="js/tags.js"></script>
+
+<!-- ========================================================
+     PUMP P-01 FACEPLATE
+========================================================= -->
+
+<div id="pump-faceplate" class="faceplate">
+
+    <div class="faceplate-header">
+
+        <div>
+            <div class="faceplate-title">
+                Pump P-01
+            </div>
+
+            <div class="faceplate-subtitle">
+                Main Irrigation Pump
+            </div>
+        </div>
+
+        <button onclick="closePumpFaceplate()">✕</button>
+
+    </div>
+
+
+    <div class="faceplate-body">
+
+        <!-- STATUS -->
+
+        <div class="faceplate-status">
+
+            <div class="status-block">
+                <span>Status</span>
+                <strong id="pump-status">
+                    RUNNING
+                </strong>
+            </div>
+
+            <div class="status-block">
+                <span>Run Feedback</span>
+                <strong id="pump-feedback">
+                    RUN
+                </strong>
+            </div>
+
+            <div class="status-block">
+                <span>Mode</span>
+                <strong id="pump-mode">
+                    AUTO
+                </strong>
+            </div>
+
+        </div>
+
+
+        <!-- PROCESS VALUES -->
+
+        <div class="faceplate-section">
+
+            <h4>Process Values</h4>
+
+            <div class="faceplate-values">
+
+                <div>
+                    <span>Speed</span>
+                    <strong id="pump-speed">
+                        62%
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Frequency</span>
+                    <strong id="pump-frequency">
+                        62 Hz
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Main Flow</span>
+                    <strong>
+                        42.6 L/min
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PERMISSIVES -->
+
+        <div class="faceplate-section">
+
+            <h4>Permissives</h4>
+
+            <div class="permissive">
+                <span>Tank Level OK</span>
+                <strong class="good">OK</strong>
+            </div>
+
+            <div class="permissive">
+                <span>Emergency Stop</span>
+                <strong class="good">OK</strong>
+            </div>
+
+            <div class="permissive">
+                <span>Pump Fault</span>
+                <strong class="good">NO FAULT</strong>
+            </div>
+
+        </div>
+
+
+        <!-- CONTROLS -->
+
+        <div class="faceplate-section">
+
+            <h4>Controls</h4>
+
+            <div class="faceplate-controls">
+
+                <button
+                    class="pump-start"
+                    onclick="startPump()">
+                    ▶ START
+                </button>
+
+                <button
+                    class="pump-stop"
+                    onclick="stopPump()">
+                    ■ STOP
+                </button>
+
+                <button
+                    onclick="togglePumpMode()">
+                    MODE
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 </body>
 </html>
