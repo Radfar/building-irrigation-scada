@@ -1,306 +1,1173 @@
-// ============================================================
-// Building Irrigation SCADA
-// Simulated Tag Database
-// ============================================================
+/* ================================================================
+   BUILDING IRRIGATION SCADA
+   TAG DATABASE / PROCESS SIMULATION
+
+   This file represents the SCADA tag layer.
+
+   In a real system these values would eventually come from:
+
+       PLC
+        ↓
+       OPC UA / Modbus / Ethernet/IP / BACnet
+        ↓
+       SCADA
+
+   For this project they are simulated locally.
+================================================================ */
+
+
+/* ================================================================
+   TAG DATABASE
+================================================================ */
 
 const tags = {
 
-    // Water system
+    /* ============================================================
+       WATER TANK
+    ============================================================ */
+
     waterTank: {
-        level: 78,
-        capacity: 20000
+
+        level: 78.0,
+
+        capacity: 20000,
+
+        lowLevelSetpoint: 20
+
     },
+
+
+    /* ============================================================
+       MAIN HEADER
+    ============================================================ */
 
     mainHeader: {
-        flow: 42.6,
-        pressure: 4.2
+
+        flow: 42.6
+
     },
 
-    // Pump station
+
+    /* ============================================================
+       PUMP P-01
+    ============================================================ */
+
     pump01: {
 
-    // Commands
-    startCommand: true,
-    stopCommand: false,
+        /* --------------------------------------------------------
+           COMMANDS
+        -------------------------------------------------------- */
 
-    // Operating mode
-    mode: "AUTO",
+        startCommand: false,
 
-    // Status
-    runCommand: true,
-    runFeedback: true,
-    fault: false,
+        stopCommand: false,
 
-    // Process values
-    speed: 62,
-    frequency: 62,
 
-    // Permissives
-    permissives: {
-        tankLevelOK: true,
-        emergencyStopOK: true,
-        noFault: true
+        /* --------------------------------------------------------
+           OPERATING MODE
+        -------------------------------------------------------- */
+
+        mode: "AUTO",
+
+
+        /* --------------------------------------------------------
+           STATUS
+        -------------------------------------------------------- */
+
+        runCommand: true,
+
+        runFeedback: true,
+
+        fault: false,
+
+
+        /* --------------------------------------------------------
+           VFD / PROCESS VALUES
+        -------------------------------------------------------- */
+
+        speed: 62,
+
+        frequency: 62,
+
+
+        /* --------------------------------------------------------
+           PERMISSIVES
+        -------------------------------------------------------- */
+
+        permissives: {
+
+            tankLevelOK: true,
+
+            emergencyStopOK: true,
+
+            noFault: true
+
+        }
+
+    },
+
+
+    /* ============================================================
+       ZONES
+    ============================================================ */
+
+    zones: {
+
+        zone01: {
+
+            name: "Main Entrance",
+
+            moisture: 48,
+
+            flow: 21.3,
+
+            valve: 100,
+
+            running: true
+
+        },
+
+
+        zone02: {
+
+            name: "Courtyard",
+
+            moisture: 42,
+
+            flow: 21.3,
+
+            valve: 100,
+
+            running: true
+
+        },
+
+
+        zone03: {
+
+            name: "Roof Garden",
+
+            moisture: 24,
+
+            flow: 0,
+
+            valve: 0,
+
+            running: false
+
+        },
+
+
+        zone04: {
+
+            name: "East Garden",
+
+            moisture: 61,
+
+            flow: 0,
+
+            valve: 0,
+
+            running: false
+
+        },
+
+
+        zone05: {
+
+            name: "West Garden",
+
+            moisture: 56,
+
+            flow: 0,
+
+            valve: 0,
+
+            running: false
+
+        },
+
+
+        zone06: {
+
+            name: "Parking Landscape",
+
+            moisture: 52,
+
+            flow: 0,
+
+            valve: 0,
+
+            running: false
+
+        }
+
     }
-    },
 
-    // Irrigation zones
-    zone01: {
-        moisture: 48,
-        flow: 21.3,
-        valve: 100,
-        status: "RUNNING"
-    },
-
-    zone02: {
-        moisture: 42,
-        flow: 21.3,
-        valve: 100,
-        status: "RUNNING"
-    },
-
-    zone03: {
-        moisture: 24,
-        flow: 0,
-        valve: 0,
-        status: "LOW MOISTURE"
-    },
-
-    zone04: {
-        moisture: 61,
-        flow: 0,
-        valve: 0,
-        status: "STANDBY"
-    },
-
-    zone05: {
-        moisture: 56,
-        flow: 0,
-        valve: 0,
-        status: "STANDBY"
-    },
-
-    zone06: {
-        moisture: 52,
-        flow: 0,
-        valve: 0,
-        status: "STANDBY"
-    },
-
-    // Alarm system
-    alarms: {
-        active: 1
-    }
 };
 
 
-// ============================================================
-// HMI UPDATE FUNCTION
-// ============================================================
+/* ================================================================
+   PUMP PERMISSIVE EVALUATION
+================================================================ */
 
-function updateHMI() {
+function evaluatePumpPermissives() {
 
-    // Water tank
-    document.getElementById("tank").textContent =
-        `${tags.waterTank.level}%`;
-
-    const tankLevel = Number(tags.waterTank.level.toFixed(1));
-
-    const tankLitres = Math.round(
-    tankLevel * tags.waterTank.capacity / 100
-);
-
-    document.getElementById("tank").textContent =
-    `${tankLevel}%`;
-
-    document.getElementById("tank2").textContent =
-    `${tankLevel}% • ${tankLitres.toLocaleString()} L`;
-
-    // Main flow
-    document.getElementById("flow").textContent =
-        `${tags.mainHeader.flow.toFixed(1)} L/min`;
+    const pump = tags.pump01;
 
 
-    // Active zones
-    let activeZones = 0;
+    /* Tank level permissive */
 
-    Object.keys(tags).forEach(key => {
-
-        if (key.startsWith("zone")) {
-
-            if (tags[key].status === "RUNNING") {
-                activeZones++;
-            }
-
-        }
-
-    });
-
-    document.getElementById("activeZones").textContent =
-        `${activeZones} / 8`;
+    pump.permissives.tankLevelOK =
+        tags.waterTank.level >=
+        tags.waterTank.lowLevelSetpoint;
 
 
-    // Alarm count
-    document.getElementById("alarmCount").textContent =
-        tags.alarms.active;
+    /* Emergency stop */
+
+    pump.permissives.emergencyStopOK =
+        true;
+
+
+    /* Fault */
+
+    pump.permissives.noFault =
+        !pump.fault;
+
+
+    return (
+
+        pump.permissives.tankLevelOK &&
+
+        pump.permissives.emergencyStopOK &&
+
+        pump.permissives.noFault
+
+    );
+
 }
 
 
-// ============================================================
-// SIMULATION
-// ============================================================
-
-function simulateProcess() {
-
-    // Small random variation in water flow
-    const variation = (Math.random() - 0.5) * 2;
-
-    tags.mainHeader.flow =
-        Math.max(0, tags.mainHeader.flow + variation);
-
-
-    // Water consumption
-    if (tags.pump01.status === "RUNNING") {
-
-        tags.waterTank.level -= 0.02;
-
-        if (tags.waterTank.level < 20) {
-            tags.waterTank.level = 20;
-        }
-
-    }
-
-
-    updateHMI();
-}
-// ============================================================
-// PUMP CONTROL
-// ============================================================
+/* ================================================================
+   START PUMP
+================================================================ */
 
 function startPump() {
 
     const pump = tags.pump01;
 
-    // Check permissives before starting
-    if (!pump.permissives.tankLevelOK) {
-        alert("P-01 cannot start: Water tank level is too low.");
+
+    /*
+     * AUTO mode:
+     *
+     * Operator START is not allowed.
+     * The automatic control sequence owns the command.
+     */
+
+    if (pump.mode === "AUTO") {
+
+        showOperatorMessage(
+            "P-01 is in AUTO mode. " +
+            "The automatic irrigation sequence controls the pump."
+        );
+
         return;
+
     }
 
-    if (!pump.permissives.emergencyStopOK) {
-        alert("P-01 cannot start: Emergency stop is active.");
+
+    /*
+     * Evaluate permissives
+     */
+
+    if (!evaluatePumpPermissives()) {
+
+        showOperatorMessage(
+            "P-01 cannot start. " +
+            "One or more permissives are not satisfied."
+        );
+
+        updatePumpFaceplate();
+
         return;
+
     }
 
-    if (pump.fault) {
-        alert("P-01 cannot start: Pump fault is active.");
-        return;
-    }
+
+    /*
+     * Issue command
+     */
 
     pump.startCommand = true;
+
     pump.stopCommand = false;
 
-    // Simulate motor starting
     pump.runCommand = true;
+
+
+    /*
+     * Simulated VFD response
+     */
+
     pump.runFeedback = true;
-    pump.status = "RUNNING";
+
+    pump.speed = 62;
+
+    pump.frequency = 62;
+
 
     updatePumpFaceplate();
+
     updateHMI();
+
 }
 
+
+/* ================================================================
+   STOP PUMP
+================================================================ */
 
 function stopPump() {
 
     const pump = tags.pump01;
 
+
     pump.startCommand = false;
+
     pump.stopCommand = true;
 
-    // Simulate motor stopping
     pump.runCommand = false;
+
+
+    /*
+     * Simulated feedback
+     */
+
     pump.runFeedback = false;
-    pump.status = "STOPPED";
+
+    pump.speed = 0;
+
+    pump.frequency = 0;
+
 
     updatePumpFaceplate();
+
     updateHMI();
+
 }
 
+
+/* ================================================================
+   TOGGLE AUTO / MANUAL
+================================================================ */
 
 function togglePumpMode() {
 
     const pump = tags.pump01;
 
+
     if (pump.mode === "AUTO") {
+
         pump.mode = "MANUAL";
-    } else {
-        pump.mode = "AUTO";
+
     }
 
+    else {
+
+        pump.mode = "AUTO";
+
+
+        /*
+         * Returning to AUTO removes
+         * the manual start command.
+         */
+
+        pump.startCommand = false;
+
+    }
+
+
     updatePumpFaceplate();
+
 }
 
 
-// ============================================================
-// PUMP FACEPLATE DISPLAY
-// ============================================================
+/* ================================================================
+   UPDATE PUMP FACEPLATE
+================================================================ */
 
 function updatePumpFaceplate() {
 
     const pump = tags.pump01;
 
+
+    /*
+     * Always evaluate current conditions first.
+     */
+
+    evaluatePumpPermissives();
+
+
+    /* ------------------------------------------------------------
+       ELEMENT REFERENCES
+    ------------------------------------------------------------ */
+
     const modeElement =
-        document.getElementById("pump-mode");
+        document.getElementById(
+            "pump-mode"
+        );
+
 
     const statusElement =
-        document.getElementById("pump-status");
+        document.getElementById(
+            "pump-status"
+        );
+
 
     const feedbackElement =
-        document.getElementById("pump-feedback");
+        document.getElementById(
+            "pump-feedback"
+        );
+
 
     const speedElement =
-        document.getElementById("pump-speed");
+        document.getElementById(
+            "pump-speed"
+        );
+
 
     const frequencyElement =
-        document.getElementById("pump-frequency");
+        document.getElementById(
+            "pump-frequency"
+        );
 
-    if (!modeElement) return;
 
-    modeElement.textContent = pump.mode;
+    const flowElement =
+        document.getElementById(
+            "pump-flow"
+        );
+
+
+    const startButton =
+        document.getElementById(
+            "pump-start-button"
+        );
+
+
+    const stopButton =
+        document.getElementById(
+            "pump-stop-button"
+        );
+
+
+    const modeButton =
+        document.getElementById(
+            "pump-mode-button"
+        );
+
+
+    const tankPermissive =
+        document.getElementById(
+            "pump-tank-permissive"
+        );
+
+
+    const estopPermissive =
+        document.getElementById(
+            "pump-estop-permissive"
+        );
+
+
+    const faultPermissive =
+        document.getElementById(
+            "pump-fault-permissive"
+        );
+
+
+    const nodeStatus =
+        document.getElementById(
+            "pump-node-status"
+        );
+
+
+    /*
+     * Faceplate may not exist yet.
+     */
+
+    if (!modeElement) {
+
+        return;
+
+    }
+
+
+    /* ------------------------------------------------------------
+       STATUS
+    ------------------------------------------------------------ */
+
+    modeElement.textContent =
+        pump.mode;
+
 
     statusElement.textContent =
-        pump.runCommand ? "RUNNING" : "STOPPED";
+        pump.runFeedback
+            ? "RUNNING"
+            : "STOPPED";
+
+
+    statusElement.className =
+        pump.runFeedback
+            ? "running-text"
+            : "stopped-text";
+
 
     feedbackElement.textContent =
-        pump.runFeedback ? "RUN" : "OFF";
+        pump.runFeedback
+            ? "RUN"
+            : "OFF";
+
+
+    feedbackElement.className =
+        pump.runFeedback
+            ? "running-text"
+            : "stopped-text";
+
+
+    /* ------------------------------------------------------------
+       PROCESS VALUES
+    ------------------------------------------------------------ */
 
     speedElement.textContent =
-        `${pump.speed}%`;
+        `${pump.speed.toFixed(0)}%`;
+
 
     frequencyElement.textContent =
-        `${pump.frequency} Hz`;
-}
-function openPumpFaceplate() {
+        `${pump.frequency.toFixed(0)} Hz`;
 
-    document.getElementById(
-        "pump-faceplate"
-    ).style.display = "block";
+
+    flowElement.textContent =
+        pump.runFeedback
+            ? `${tags.mainHeader.flow.toFixed(1)} L/min`
+            : "0.0 L/min";
+
+
+    /* ------------------------------------------------------------
+       PERMISSIVES
+    ------------------------------------------------------------ */
+
+    setPermissiveDisplay(
+
+        tankPermissive,
+
+        pump.permissives.tankLevelOK,
+
+        "OK",
+
+        "LOW LEVEL"
+
+    );
+
+
+    setPermissiveDisplay(
+
+        estopPermissive,
+
+        pump.permissives.emergencyStopOK,
+
+        "OK",
+
+        "ACTIVE"
+
+    );
+
+
+    setPermissiveDisplay(
+
+        faultPermissive,
+
+        pump.permissives.noFault,
+
+        "NO FAULT",
+
+        "FAULT"
+
+    );
+
+
+    /* ------------------------------------------------------------
+       START BUTTON
+    ------------------------------------------------------------ */
+
+    if (
+
+        pump.mode === "MANUAL" &&
+
+        !pump.runFeedback &&
+
+        evaluatePumpPermissives()
+
+    ) {
+
+        startButton.disabled = false;
+
+    }
+
+    else {
+
+        startButton.disabled = true;
+
+    }
+
+
+    /* ------------------------------------------------------------
+       STOP BUTTON
+    ------------------------------------------------------------ */
+
+    stopButton.disabled =
+        !pump.runFeedback;
+
+
+    /* ------------------------------------------------------------
+       START BUTTON VISUAL STATE
+    ------------------------------------------------------------ */
+
+    startButton.classList.remove(
+        "pump-running"
+    );
+
+
+    stopButton.classList.remove(
+        "pump-stopped"
+    );
+
+
+    if (pump.runFeedback) {
+
+        stopButton.classList.add(
+            "pump-stopped"
+        );
+
+    }
+
+    else {
+
+        startButton.classList.add(
+            "pump-running"
+        );
+
+    }
+
+
+    /* ------------------------------------------------------------
+       MODE BUTTON
+    ------------------------------------------------------------ */
+
+    modeButton.textContent =
+        pump.mode;
+
+
+    modeButton.classList.add(
+        "mode-selected"
+    );
+
+
+    /* ------------------------------------------------------------
+       SYSTEM SCHEMATIC STATUS
+    ------------------------------------------------------------ */
+
+    if (nodeStatus) {
+
+        nodeStatus.textContent =
+            pump.runFeedback
+
+                ? `RUN • ${pump.frequency.toFixed(0)} Hz`
+
+                : "STOPPED";
+
+    }
+
+}
+
+
+/* ================================================================
+   PERMISSIVE DISPLAY HELPER
+================================================================ */
+
+function setPermissiveDisplay(
+
+    element,
+
+    condition,
+
+    goodText,
+
+    badText
+
+) {
+
+    if (!element) {
+
+        return;
+
+    }
+
+
+    element.textContent =
+        condition
+            ? goodText
+            : badText;
+
+
+    element.className =
+        condition
+            ? "good"
+            : "bad";
+
+}
+
+
+/* ================================================================
+   HMI UPDATE
+================================================================ */
+
+function updateHMI() {
+
+    /*
+     * Evaluate pump permissives
+     */
+
+    evaluatePumpPermissives();
+
+
+    /* ------------------------------------------------------------
+       TANK
+    ------------------------------------------------------------ */
+
+    const tankLevel =
+        Number(
+            tags.waterTank.level.toFixed(1)
+        );
+
+
+    const tankLitres =
+        Math.round(
+            tankLevel *
+            tags.waterTank.capacity /
+            100
+        );
+
+
+    const tankElement =
+        document.getElementById(
+            "tank"
+        );
+
+
+    const tank2Element =
+        document.getElementById(
+            "tank2"
+        );
+
+
+    if (tankElement) {
+
+        tankElement.textContent =
+            `${tankLevel.toFixed(1)}%`;
+
+    }
+
+
+    if (tank2Element) {
+
+        tank2Element.textContent =
+            `${tankLevel.toFixed(1)}% • ` +
+            `${tankLitres.toLocaleString()} L`;
+
+    }
+
+
+    /* ------------------------------------------------------------
+       MAIN FLOW
+    ------------------------------------------------------------ */
+
+    const flow =
+        tags.pump01.runFeedback
+            ? tags.mainHeader.flow
+            : 0;
+
+
+    const flowText =
+        `${flow.toFixed(1)} L/min`;
+
+
+    const flowElement =
+        document.getElementById(
+            "flow"
+        );
+
+
+    const headerFlowElement =
+        document.getElementById(
+            "header-flow"
+        );
+
+
+    if (flowElement) {
+
+        flowElement.textContent =
+            flowText;
+
+    }
+
+
+    if (headerFlowElement) {
+
+        headerFlowElement.textContent =
+            flowText;
+
+    }
+
+
+    /* ------------------------------------------------------------
+       ACTIVE ZONES
+    ------------------------------------------------------------ */
+
+    let activeZones = 0;
+
+
+    Object.values(tags.zones)
+        .forEach(zone => {
+
+            if (zone.running) {
+
+                activeZones++;
+
+            }
+
+        });
+
+
+    const activeZonesElement =
+        document.getElementById(
+            "activeZones"
+        );
+
+
+    if (activeZonesElement) {
+
+        activeZonesElement.textContent =
+            `${activeZones} / 8`;
+
+    }
+
+
+    /* ------------------------------------------------------------
+       DAILY WATER
+    ------------------------------------------------------------ */
+
+    const dailyWater =
+        document.getElementById(
+            "dailyWater"
+        );
+
+
+    if (dailyWater) {
+
+        dailyWater.textContent =
+            "3,840 L";
+
+    }
+
+
+    /* ------------------------------------------------------------
+       PUMP FACEPLATE
+    ------------------------------------------------------------ */
 
     updatePumpFaceplate();
+
 }
 
+
+/* ================================================================
+   OPERATOR MESSAGE
+================================================================ */
+
+function showOperatorMessage(message) {
+
+    alert(message);
+
+}
+
+
+/* ================================================================
+   ZONE DEMO CONTROL
+================================================================ */
+
+function toggle(button) {
+
+    const zone =
+        button
+            .closest(".zone");
+
+
+    const status =
+        zone.querySelector(
+            ".status"
+        );
+
+
+    if (
+        button.textContent
+        .trim()
+        === "Stop"
+    ) {
+
+        button.textContent =
+            "Start";
+
+
+        status.textContent =
+            "STANDBY";
+
+
+        status.classList.remove(
+            "ok"
+        );
+
+
+        status.classList.add(
+            "warn"
+        );
+
+    }
+
+    else {
+
+        button.textContent =
+            "Stop";
+
+
+        status.textContent =
+            "RUNNING";
+
+
+        status.classList.remove(
+            "warn"
+        );
+
+
+        status.classList.add(
+            "ok"
+        );
+
+    }
+
+}
+
+
+/* ================================================================
+   START ALL
+================================================================ */
+
+function startAll() {
+
+    showOperatorMessage(
+        "Demo command: automatic irrigation sequence started."
+    );
+
+}
+
+
+/* ================================================================
+   ACKNOWLEDGE ALARMS
+================================================================ */
+
+function ack() {
+
+    const alarmCount =
+        document.getElementById(
+            "alarmCount"
+        );
+
+
+    if (alarmCount) {
+
+        alarmCount.textContent =
+            "0";
+
+    }
+
+
+    const alarm =
+        document.querySelector(
+            ".alarm-row .sev.low"
+        );
+
+
+    if (alarm) {
+
+        alarm.textContent =
+            "ACK";
+
+        alarm.classList.remove(
+            "low"
+        );
+
+    }
+
+}
+
+
+/* ================================================================
+   OPEN FACEPLATE
+================================================================ */
+
+function openPumpFaceplate() {
+
+    const faceplate =
+        document.getElementById(
+            "pump-faceplate"
+        );
+
+
+    const overlay =
+        document.getElementById(
+            "faceplate-overlay"
+        );
+
+
+    faceplate.style.display =
+        "block";
+
+
+    overlay.style.display =
+        "block";
+
+
+    updatePumpFaceplate();
+
+}
+
+
+/* ================================================================
+   CLOSE FACEPLATE
+================================================================ */
 
 function closePumpFaceplate() {
 
-    document.getElementById(
-        "pump-faceplate"
-    ).style.display = "none";
+    const faceplate =
+        document.getElementById(
+            "pump-faceplate"
+        );
+
+
+    const overlay =
+        document.getElementById(
+            "faceplate-overlay"
+        );
+
+
+    faceplate.style.display =
+        "none";
+
+
+    overlay.style.display =
+        "none";
+
 }
-// ============================================================
-// INITIALIZE
-// ============================================================
 
-updateHMI();
-updatePumpFaceplate();
 
-// Simulate the process every 2 seconds
-setInterval(simulateProcess, 2000);
+/* ================================================================
+   CLOCK
+================================================================ */
+
+function updateClock() {
+
+    const clock =
+        document.getElementById(
+            "clock"
+        );
+
+
+    if (clock) {
+
+        clock.textContent =
+            new Date().toLocaleTimeString();
+
+    }
+
+}
+
+
+/* ================================================================
+   INITIALIZATION
+================================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        updateClock();
+
+        updateHMI();
+
+    }
+);
+
+
+/* ================================================================
+   CLOCK TIMER
+================================================================ */
+
+setInterval(
+    updateClock,
+    1000
+);
+
+
+/* ================================================================
+   PROCESS SIMULATION
+
+   This deliberately runs slowly.
+
+   Later this section will be replaced by
+   real data coming from the backend/API.
+================================================================ */
+
+setInterval(
+    function () {
+
+        /*
+         * Simulate tank consumption only
+         * while the pump is running.
+         */
+
+        if (
+            tags.pump01.runFeedback &&
+            tags.waterTank.level > 0
+        ) {
+
+            tags.waterTank.level -= 0.02;
+
+        }
+
+
+        /*
+         * Prevent negative values.
+         */
+
+        if (
+            tags.waterTank.level < 0
+        ) {
+
+            tags.waterTank.level = 0;
+
+        }
+
+
+        updateHMI();
+
+    },
+
+    1000
+);
