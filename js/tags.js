@@ -1219,4 +1219,55 @@ setInterval(
 
     1000
 );
+/*
+ * Get the latest value of a SCADA tag
+ */
+
+async function getTagValue(tagName) {
+
+    try {
+
+        const response = await fetch(
+            `http://localhost:3000/api/tags/${encodeURIComponent(tagName)}/value`
+        );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP error: ${response.status}`
+            );
+
+        }
+
+        const tag = await response.json();
+
+        return {
+
+            ...tag,
+
+            value: Number(tag.value)
+
+        };
+
+    }
+
+    catch (error) {
+
+        console.error(
+            `Unable to load tag ${tagName}:`,
+            error
+        );
+
+        return null;
+
+    }
+getTagValue("T01_LEVEL").then(tag => {
+
+    console.log(
+        "T01_LEVEL from PostgreSQL:",
+        tag
+    );
+
+});
+}
 loadDatabaseTags();
