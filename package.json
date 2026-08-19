@@ -17,5 +17,11 @@
   "bugs": {
     "url": "https://github.com/Radfar/building-irrigation-scada/issues"
   },
-  "homepage": "https://github.com/Radfar/building-irrigation-scada#readme"
+  "homepage": "https://github.com/Radfar/building-irrigation-scada#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.23.0"
+  }
 }
