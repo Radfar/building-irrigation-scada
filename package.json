@@ -1,0 +1,21 @@
+{
+  "name": "building-irrigation-scada",
+  "version": "1.0.0",
+  "description": "a working browser-based SCADA/HMI prototype for a large commercial building irrigation system.\r It includes:",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Radfar/building-irrigation-scada.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Radfar/building-irrigation-scada/issues"
+  },
+  "homepage": "https://github.com/Radfar/building-irrigation-scada#readme"
+}
