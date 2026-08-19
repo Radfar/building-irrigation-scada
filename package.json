@@ -4,7 +4,8 @@
   "description": "a working browser-based SCADA/HMI prototype for a large commercial building irrigation system.\r It includes:",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+     "start": "node server/server.js"
+
   },
   "repository": {
     "type": "git",
