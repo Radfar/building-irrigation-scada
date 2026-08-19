@@ -1,3 +1,51 @@
+/*
+ * Load real SCADA tags from PostgreSQL
+ * through the Node.js REST API.
+ */
+
+async function loadDatabaseTags() {
+
+    try {
+
+        const response = await fetch(
+            "http://localhost:3000/api/tags"
+        );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP error: ${response.status}`
+            );
+
+        }
+
+        const tags = await response.json();
+
+        console.log(
+            "PostgreSQL SCADA tags:",
+            tags
+        );
+
+        console.log(
+            `Loaded ${tags.length} tags from PostgreSQL`
+        );
+
+        return tags;
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Unable to load SCADA tags:",
+            error
+        );
+
+        return [];
+
+    }
+
+}
 /* ================================================================
    BUILDING IRRIGATION SCADA
    TAG DATABASE / PROCESS SIMULATION
@@ -1171,3 +1219,4 @@ setInterval(
 
     1000
 );
+loadDatabaseTags();

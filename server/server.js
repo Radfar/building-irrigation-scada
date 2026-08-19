@@ -74,7 +74,6 @@ app.get("/api/equipment", async (req, res) => {
 
         `);
 
-
         res.json(result.rows);
 
     }
@@ -94,6 +93,67 @@ app.get("/api/equipment", async (req, res) => {
 
 });
 
+/*
+ * Get all SCADA tags
+ */
+
+app.get("/api/tags", async (req, res) => {
+
+    try {
+
+        const result = await pool.query(`
+
+            SELECT
+
+                t.id,
+
+                t.tag_name,
+
+                t.description,
+
+                t.data_type,
+
+                t.unit,
+
+                e.tag_name AS equipment_tag,
+
+                e.description AS equipment_description,
+
+                e.equipment_type,
+
+                e.location
+
+            FROM tags t
+
+            LEFT JOIN equipment e
+                ON t.equipment_id = e.id
+
+            ORDER BY t.id;
+
+        `);
+
+
+        res.json(result.rows);
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Failed to retrieve tags:",
+            error
+        );
+
+        res.status(500).json({
+
+            error:
+                "Failed to retrieve tags"
+
+        });
+
+    }
+
+});
 
 /*
  * Start server
