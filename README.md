@@ -1,6 +1,5 @@
-# building-irrigation-scada
-a working browser-based SCADA/HMI prototype for a large commercial building irrigation system.
-It includes:
+# Building Irrigation Web SCADA & OT Integration Platform
+A hands-on engineering project for developing a web-based SCADA/HMI platform and validating its integration with PLC, VFD, IoT and industrial communication technologies.
 
 Building/site overview
 8 irrigation zones
