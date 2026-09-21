@@ -1,3 +1,5 @@
+const { startOpcua, zone3 } = require("./opcua");
+
 const express = require("express");
 
 const cors = require("cors");
@@ -18,6 +20,7 @@ const PORT = 3000;
  */
 
 app.use(cors());
+app.get("/api/zone3", (req, res) => res.json(zone3));
 
 app.use(express.json());
 
@@ -244,6 +247,7 @@ app.get("/api/tags/:tagName/value", async (req, res) => {
 /*
  * Start server
  */
+startOpcua().catch(err => console.error("OPC UA start failed:", err.message));
 
 app.listen(PORT, async () => {
 
