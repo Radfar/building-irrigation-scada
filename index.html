@@ -688,7 +688,7 @@
             gap: 6px;
 
             margin-top: 12px;
-
+            
         }
 
 
@@ -2002,65 +2002,41 @@
 
                         <!-- ZONE 03 -->
 
-                        <div class="zone">
+                        <!-- ZONE 03 -->
+<div class="zone">
 
-                            <div class="zone-head">
+    <div class="zone-head">
+        <span class="zone-name">Zone 03 • Roof Garden</span>
+        <span id="z3-status" class="status warn">NO DATA</span>
+    </div>
 
-                                <span class="zone-name">
-                                    Zone 03 • Roof Garden
-                                </span>
+    <div class="zone-data">
+        <div class="metric">
+            Moisture
+            <strong id="z3-moisture">--</strong>
+        </div>
+        <div class="metric">
+            Flow
+            <strong id="z3-flow">--</strong>
+        </div>
+        <div class="metric">
+            Valve
+            <strong id="z3-valve">--</strong>
+        </div>
+    </div>
 
-                                <span class="status warn">
-                                    LOW MOISTURE
-                                </span>
+    <div class="bar">
+        <span id="z3-bar" style="width:0%"></span>
+    </div>
 
-                            </div>
+    <div class="controls">
+        <button id="z3-btn-start" onclick="zone3Command('start')">Start</button>
+        <button id="z3-btn-stop" onclick="zone3Command('stop')">Stop</button>
+        <button id="z3-btn-mode" onclick="zone3ToggleMode()">--</button>
+        <button id="z3-btn-reset" onclick="zone3Command('faultReset')" style="display:none">Reset</button>
+    </div>
 
-
-                            <div class="zone-data">
-
-                                <div class="metric">
-                                    Moisture
-                                    <strong>24%</strong>
-                                </div>
-
-                                <div class="metric">
-                                    Flow
-                                    <strong>0 L/min</strong>
-                                </div>
-
-                                <div class="metric">
-                                    Valve
-                                    <strong>0%</strong>
-                                </div>
-
-                            </div>
-
-
-                            <div class="bar">
-                                <span style="width:24%"></span>
-                            </div>
-
-
-                            <div class="controls">
-
-                                <button>
-                                    Start
-                                </button>
-
-                                <button>
-                                    Manual
-                                </button>
-
-                                <button>
-                                    Details
-                                </button>
-
-                            </div>
-
-                        </div>
-
-
+</div>
 
                         <!-- ZONE 04 -->
 

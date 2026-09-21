@@ -1,4 +1,4 @@
-const { startOpcua, zone3, live } = require("./opcua");
+const { startOpcua, stopOpcua, sendCommand, zone3, live } = require("./opcua");
 const express = require("express");
 
 const cors = require("cors");
@@ -22,7 +22,15 @@ app.use(cors());
 app.get("/api/zone3", (req, res) => res.json(zone3));
 app.get("/api/live", (req, res) => res.json(live));
 app.use(express.json());
-
+app.post("/api/zone3/command", async (req, res) => {
+    try {
+        await sendCommand(req.body.command);
+        res.json({ ok: true, command: req.body.command });
+    }
+    catch (err) {
+        res.status(err.status || 500).json({ ok: false, error: err.message });
+    }
+});
 
 /*
  * Basic API test
@@ -257,4 +265,9 @@ app.listen(PORT, async () => {
 
     await testDatabaseConnection();
 
+});
+
+process.on("SIGINT", async () => {
+    await stopOpcua();
+    process.exit(0);
 });

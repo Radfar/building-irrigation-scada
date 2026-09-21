@@ -477,8 +477,8 @@ async function updateZone3() {
             throw new Error("OPC UA not connected");
         }
 
-        /* PLC moisture is a 0-1 fraction, HMI shows percent */
-        const moisturePct = (Number(z.MOISTURE) || 0) * 100;
+        /* PLC moisture is already in percent (setpoints 30 / 70) */
+        const moisturePct = Number(z.MOISTURE) || 0;
 
         if (moisture) moisture.textContent = fmt(moisturePct, "%");
         if (flow)     flow.textContent     = fmt(z.FLOW, " L/min");
@@ -489,25 +489,89 @@ async function updateZone3() {
         tags.zones.zone03.moisture = moisturePct;
         tags.zones.zone03.flow     = Number(z.FLOW) || 0;
         tags.zones.zone03.valve    = Number(z.VALVE) || 0;
-        tags.zones.zone03.running  = Number(z.FLOW) > 0;
+        tags.zones.zone03.running  = !!z.RUNNING;
 
         if (z.FAULT) {
             badge.textContent = "FAULT";
             badge.className   = "status alarm";
         }
-        else if (Number(z.FLOW) > 0) {
+        else if (z.RUNNING) {
             badge.textContent = "RUNNING";
             badge.className   = "status ok";
         }
-        else {
-            badge.textContent = "STANDBY";
+        else if (moisturePct < Number(z.MOISTURE_LOW_SP)) {
+            badge.textContent = "LOW MOISTURE";
             badge.className   = "status warn";
         }
+        else {
+            badge.textContent = "STANDBY";
+            badge.className   = "status ok";
+        }
+
+        zone3State = z;
+        updateZone3Buttons(z);
     }
     catch (error) {
         badge.textContent = "NO DATA";
         badge.className   = "status alarm";
+        updateZone3Buttons(null);
     }
+}
+
+
+/* ================================================================
+   ZONE 03 - OPERATOR COMMANDS (web -> Node -> CODESYS)
+================================================================ */
+
+let zone3State = {};
+
+
+async function zone3Command(command) {
+    try {
+        const response = await fetch(`${API_BASE}/api/zone3/command`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ command })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            showOperatorMessage(result.error || "Command failed");
+        }
+    }
+    catch (error) {
+        showOperatorMessage("Command failed: backend not reachable");
+    }
+
+    updateZone3();
+}
+
+
+function zone3ToggleMode() {
+    zone3Command(zone3State.AUTO ? "manual" : "auto");
+}
+
+
+function updateZone3Buttons(z) {
+    const start = document.getElementById("z3-btn-start");
+    const stop  = document.getElementById("z3-btn-stop");
+    const mode  = document.getElementById("z3-btn-mode");
+    const reset = document.getElementById("z3-btn-reset");
+
+    const off = !z;
+
+    /* Start only in MANUAL, with permissive, when not running */
+    if (start) start.disabled = off || !(!z.AUTO && z.PERMISSIVE && !z.RUNNING);
+
+    if (stop) stop.disabled = off || !z.RUNNING;
+
+    if (mode) {
+        mode.disabled = off;
+        mode.textContent = off ? "--" : (z.AUTO ? "AUTO" : "MANUAL");
+    }
+
+    if (reset) reset.style.display = (!off && z.FAULT) ? "block" : "none";
 }
 
 
