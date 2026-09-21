@@ -1,5 +1,4 @@
-const { startOpcua, zone3 } = require("./opcua");
-
+const { startOpcua, zone3, live } = require("./opcua");
 const express = require("express");
 
 const cors = require("cors");
@@ -21,7 +20,7 @@ const PORT = 3000;
 
 app.use(cors());
 app.get("/api/zone3", (req, res) => res.json(zone3));
-
+app.get("/api/live", (req, res) => res.json(live));
 app.use(express.json());
 
 
