@@ -5,7 +5,7 @@ A custom web-based SCADA/HMI for a building irrigation process. A Node.js servic
 This is the web layer of the [Water Process Integration Testbed](../README.md). The same CODESYS runtime is also consumed by an **Ignition Perspective** project, so two independent OPC UA clients work against one PLC.
 ## Demo
 
-https://github.com/user-attachments/assets/YOUR-VIDEO-ID
+https://github.com/Radfar/building-irrigation-scada/blob/main/Docs/media/NodeOPC.mp4
 
 *Startup sequence: server offline → `NO DATA` on the dashboard → OPC UA connects → live tag values → Start/Stop/Auto-Manual commands, shown side by side with CODESYS to confirm the write reaches the PLC.*
 > Screenshots and a short screen recording are in `media/`.
