@@ -1,1 +1,0 @@
-Direct Node.js → CODESYS OPC UA session testing was investigated. Endpoint discovery was successful, but CreateSession interoperability with the CODESYS OPC UA server could not be established. CODESYS OPC UA was subsequently integrated through Ignition, which successfully established and activated the OPC UA session.
