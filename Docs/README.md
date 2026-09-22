@@ -3,7 +3,11 @@
 A custom web-based SCADA/HMI for a building irrigation process. A Node.js service connects to a **CODESYS Control Win** runtime over **OPC UA**, reads live process data, and sends operator commands back to the PLC. A browser HMI shows Zone 03 live and controls it. PostgreSQL holds the equipment and tag configuration.
 
 This is the web layer of the [Water Process Integration Testbed](../README.md). The same CODESYS runtime is also consumed by an **Ignition Perspective** project, so two independent OPC UA clients work against one PLC.
+## Demo
 
+https://github.com/user-attachments/assets/YOUR-VIDEO-ID
+
+*Startup sequence: server offline → `NO DATA` on the dashboard → OPC UA connects → live tag values → Start/Stop/Auto-Manual commands, shown side by side with CODESYS to confirm the write reaches the PLC.*
 > Screenshots and a short screen recording are in `media/`.
 
 ---
