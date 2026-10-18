@@ -574,20 +574,89 @@ function updateZone3Buttons(z) {
     if (reset) reset.style.display = (!off && z.FAULT) ? "block" : "none";
 }
 
+/* ================================================================
+   ZONE 04 - LIVE DATA FROM ESP8266 (MQTT via Node-RED)
+================================================================ */
+
+function formatAge(seconds) {
+    if (!Number.isFinite(seconds)) return "--";
+    if (seconds < 60)   return Math.round(seconds) + " s ago";
+    if (seconds < 3600) return Math.round(seconds / 60) + " min ago";
+    return Math.round(seconds / 3600) + " h ago";
+}
+
+
+async function updateZone4() {
+    const badge    = document.getElementById("z4-status");
+    const moisture = document.getElementById("z4-moisture");
+    const node     = document.getElementById("z4-node");
+    const age      = document.getElementById("z4-age");
+    const bar      = document.getElementById("z4-bar");
+
+    /* Card not in index.html yet */
+    if (!badge) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/api/zone4`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
+
+        const z = await response.json();
+
+        const moisturePct = Number(z.moisture);
+        const valid       = Number.isFinite(moisturePct);
+        const barPct      = valid ? Math.min(Math.max(moisturePct, 0), 100) : 0;
+
+        if (moisture) moisture.textContent = valid ? fmt(moisturePct, "%") : "--";
+        if (bar)      bar.style.width      = barPct + "%";
+        if (node)     node.textContent     = z.nodeId || "--";
+        if (age)      age.textContent      = formatAge(Number(z.ageSeconds));
+
+        /* Keep the local tag database in sync */
+        if (valid) {
+            tags.zones.zone04.moisture = moisturePct;
+        }
+
+        /* connected = false means the last reading is stale, not an error */
+        if (z.connected) {
+            badge.textContent = "ONLINE";
+            badge.className   = "status ok";
+        }
+        else {
+            badge.textContent = "STALE";
+            badge.className   = "status warn";
+        }
+    }
+    catch (error) {
+        /* Backend unreachable or bad response */
+        badge.textContent = "NO DATA";
+        badge.className   = "status alarm";
+
+        if (moisture) moisture.textContent = "--";
+        if (node)     node.textContent     = "--";
+        if (age)      age.textContent      = "--";
+        if (bar)      bar.style.width      = "0%";
+    }
+}
+
 
 /* ================================================================
    INITIALIZATION
 ================================================================ */
-
 document.addEventListener("DOMContentLoaded", function () {
     updateClock();
     updateHMI();
     updateZone3();
+    updateZone4();          // <-- add
 });
 
 setInterval(updateClock, 1000);
 setInterval(updateZone3, 1000);
-
+setInterval(updateZone4, 5000);   // <-- add
 
 /* ================================================================
    PROCESS SIMULATION (tank level only)

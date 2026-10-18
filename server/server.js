@@ -271,3 +271,94 @@ process.on("SIGINT", async () => {
     await stopOpcua();
     process.exit(0);
 });
+
+// Zone 04 — latest soil-moisture reading from PostgreSQL
+// Add this route after your existing /api/live route.
+// Do not remove or modify any Zone 03 routes.
+
+app.get("/api/zone4", async (req, res) => {
+    const moistureTagName =
+        process.env.ZONE4_MOISTURE_TAG || "Z04_MOISTURE";
+    try {
+        const result = await pool.query(
+            `
+            SELECT
+                t.tag_name,
+                t.description,
+                t.data_type,
+                t.unit,
+                tv.value,
+                tv.quality,
+                tv.timestamp
+            FROM tags AS t
+            LEFT JOIN LATERAL (
+                SELECT value, quality, timestamp
+                FROM tag_values
+                WHERE tag_id = t.id
+                ORDER BY timestamp DESC
+                LIMIT 1
+            ) AS tv ON TRUE
+            WHERE t.tag_name = $1
+            LIMIT 1;
+            `,
+            [moistureTagName]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                zone: 4,
+                nodeId: "soil01",
+                connected: false,
+                error: "Zone 04 moisture tag not found",
+                expectedTag: moistureTagName
+            });
+        }
+
+        const row = result.rows[0];
+
+        const timestampMs = row.timestamp
+            ? new Date(row.timestamp).getTime()
+            : NaN;
+
+        const ageSeconds = Number.isFinite(timestampMs)
+            ? Math.max(
+                0,
+                Math.floor((Date.now() - timestampMs) / 1000)
+            )
+            : null;
+
+        const valueIsValid =
+            row.value !== null &&
+            row.value !== undefined &&
+            Number.isFinite(Number(row.value));
+
+        // Treat readings older than five minutes as stale.
+        const isFresh =
+            ageSeconds !== null && ageSeconds <= 300;
+
+        return res.json({
+            zone: 4,
+            nodeId: "soil01",
+            tagName: row.tag_name,
+            moisture: valueIsValid ? Number(row.value) : null,
+            unit: row.unit || "%",
+            quality: row.quality ?? null,
+            timestamp: row.timestamp ?? null,
+            ageSeconds,
+            connected: isFresh && valueIsValid
+        });
+
+    } catch (error) {
+        console.error(
+            "Failed to retrieve Zone 04 data:",
+            error.message
+        );
+
+        return res.status(500).json({
+            zone: 4,
+            nodeId: "soil01",
+            connected: false,
+            error: "Failed to retrieve Zone 04 data"
+        });
+    }
+});
