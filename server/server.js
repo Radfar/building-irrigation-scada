@@ -12,6 +12,7 @@ const {
 const app = express();
 
 const PORT = 3000;
+//const staleSeconds = Number(process.env.ZONE4_STALE_SECONDS) || 300;
 
 
 /*
@@ -279,6 +280,8 @@ process.on("SIGINT", async () => {
 app.get("/api/zone4", async (req, res) => {
     const moistureTagName =
         process.env.ZONE4_MOISTURE_TAG || "Z04_MOISTURE";
+    const staleSeconds = Number(process.env.ZONE4_STALE_SECONDS) || 300;
+    const isFresh = ageSeconds !== null && ageSeconds <= staleSeconds;
     try {
         const result = await pool.query(
             `
