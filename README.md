@@ -77,6 +77,16 @@ Zone 03 logic runs in a CODESYS function block: moisture hysteresis for AUTO dem
 
 `Z03_MANUAL` is a PLC output (`NOT xAuto`) and is never written.
 
+## Zone 04 (IoT edge)
+
+Zone 04 has no PLC. An ESP8266 soil node publishes over MQTT, Node-RED logs each reading to
+`tag_values` as `Z04_MOISTURE`, and this API returns the latest row. The API never talks to the
+broker, so the HMI keeps working from stored data if MQTT is down, and shows STALE when readings stop.
+
+`GET /api/zone4` returns `moisture`, `unit`, `quality`, `timestamp`, `ageSeconds` and `connected`.
+`connected` is true only when the latest value is valid and fresh (default limit 300 s, set with
+`ZONE4_STALE_SECONDS`). The HMI shows ONLINE, STALE, or NO DATA when the backend is unreachable.
+
 **Interlocks enforced by the API**
 
 - `start` → only in MANUAL, only when `Z03_PERMISSIVE` is true, only when not already running
