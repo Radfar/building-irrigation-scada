@@ -21,13 +21,17 @@ flowchart LR
   H["Web HMI<br/>HTML / CSS / JS"]
   DB[("PostgreSQL<br/>equipment, tags, tag_values")]
   I["Ignition Perspective"]
+  S["ESP8266 soil node"]
+  E["Mosquitto + Node-RED<br/>(wireless-irrigation-edge)"]
 
   PLC -- "OPC UA read (1 s poll)" --> N
   N -- "OPC UA write (pulse / held)" --> PLC
-  N -- "REST: /api/zone3, /api/live" --> H
+  N -- "REST: /api/zone3, /api/zone4, /api/live" --> H
   H -- "POST /api/zone3/command" --> N
   N --- DB
   I -- "OPC UA" --> PLC
+  S -- "MQTT" --> E
+  E -- "INSERT tag_values (Z04_MOISTURE)" --> DB
 ```
 
 The browser cannot speak OPC UA, so Node.js sits in the middle: it owns the single PLC session, keeps the latest values in memory, and exposes them over REST.
