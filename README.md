@@ -108,6 +108,7 @@ broker, so the HMI keeps working from stored data if MQTT is down, and shows STA
 | GET | `/api/zone3` | Live Zone 03 values (flat object) |
 | GET | `/api/live` | All live `GVL_SCADA` tags |
 | POST | `/api/zone3/command` | Send a command: `{ "command": "start" }` |
+| GET | `/api/zone4` | Zone 04 soil moisture: latest stored value, age in seconds, freshness flag |
 
 Command errors return `409` for interlock violations, `503` when OPC UA is not connected, and `502` when the PLC rejects a write.
 
