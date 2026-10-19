@@ -1,6 +1,6 @@
 # Web HMI with OPC UA Integration — CODESYS → Node.js → Browser
 
-A custom web-based SCADA/HMI for a building irrigation process. A Node.js service connects to a **CODESYS Control Win** runtime over **OPC UA**, reads live process data, and sends operator commands back to the PLC. A browser HMI shows Zone 03 live and controls it. PostgreSQL holds the equipment and tag configuration.
+A custom web-based SCADA/HMI for a building irrigation process. A Node.js service connects to a **CODESYS Control Win** runtime over **OPC UA**, reads live process data, and sends operator commands back to the PLC. A browser HMI shows Zone 03 live and controls it, and shows Zone 04, an IoT edge zone fed by an ESP8266 soil node over MQTT, Node-RED and PostgreSQL. PostgreSQL holds the equipment and tag configuration.
 
 This is the web layer of the [Water Process Integration Testbed](../README.md). The same CODESYS runtime is also consumed by an **Ignition Perspective** project, so two independent OPC UA clients work against one PLC.
 ## Demo
