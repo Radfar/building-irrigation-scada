@@ -162,6 +162,7 @@ Check the API first: `http://localhost:3000/api/live` should list all `Z03_*` ta
 - OPC UA uses security mode **None** with an anonymous session, and the API has no authentication and open CORS. Fine for a local test setup; this must change before connecting real equipment (Basic256Sha256 with certificates, user login).
 - No automatic OPC UA reconnect yet — the Node service must be restarted if the PLC runtime restarts.
 - Commands are not logged yet. Next step: write each command to PostgreSQL with an operator name and source.
-- Live values are not yet historized into `tag_values`.
-- Zones 01, 02, 04–06, the tank and pump P-01 are not connected to PLC I/O.
-
+- This service does not write history. Zone 03 values are logged to `tag_values` by the opcua-bacnet-gateway, and Zone 04 values by Node-RED.
+- Zone 04: the soil sensor is not yet wired or calibrated, and the MQTT broker is anonymous and unencrypted (private LAN only).
+- Zone 04 age is computed from a `timestamp without time zone` column, so the API server and the database must share a time zone.
+- Zones 01, 02, 05, 06, the tank and pump P-01 are not connected to PLC I/O.
