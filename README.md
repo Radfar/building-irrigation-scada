@@ -44,8 +44,9 @@ The browser cannot speak OPC UA, so Node.js sits in the middle: it owns the sing
 |---|---|
 | Zone 03 moisture, flow, valve, status | **Live** from CODESYS (`GVL_SCADA`, `Z03_*`) |
 | Zone 03 Start / Stop / Auto-Manual / Fault Reset | **Live** writes to CODESYS |
+| Zone 04 soil moisture | **Live pipeline** (ESP8266, MQTT, Node-RED, PostgreSQL, `/api/zone4`), bench-tested; the soil sensor is not yet wired, so values are not meaningful yet |
 | Equipment and tag configuration | PostgreSQL |
-| Water tank, pump P-01, main header, Zones 01, 02, 04–06 | Local values in `js/tags.js` — no PLC I/O yet |
+| Water tank, pump P-01, main header, Zones 01, 02, 05, 06 | Local values in `js/tags.js` (no PLC I/O yet) |
 
 Zone 03 is the only zone with PLC logic so far. Other zones will follow when their PLC programs (Siemens, Rockwell) are connected.
 
