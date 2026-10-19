@@ -276,12 +276,10 @@ process.on("SIGINT", async () => {
 // Zone 04 — latest soil-moisture reading from PostgreSQL
 // Add this route after your existing /api/live route.
 // Do not remove or modify any Zone 03 routes.
-
 app.get("/api/zone4", async (req, res) => {
     const moistureTagName =
         process.env.ZONE4_MOISTURE_TAG || "Z04_MOISTURE";
     const staleSeconds = Number(process.env.ZONE4_STALE_SECONDS) || 300;
-    const isFresh = ageSeconds !== null && ageSeconds <= staleSeconds;
     try {
         const result = await pool.query(
             `
@@ -334,11 +332,11 @@ app.get("/api/zone4", async (req, res) => {
             row.value !== null &&
             row.value !== undefined &&
             Number.isFinite(Number(row.value));
-
-        // Treat readings older than five minutes as stale.
+            
+        // Treat readings older than the stale limit as stale.
         const isFresh =
-            ageSeconds !== null && ageSeconds <= 300;
-
+            ageSeconds !== null && ageSeconds <= staleSeconds;
+        
         return res.json({
             zone: 4,
             nodeId: "soil01",
