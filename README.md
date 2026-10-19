@@ -2,7 +2,7 @@
 
 A custom web-based SCADA/HMI for a building irrigation process. A Node.js service connects to a **CODESYS Control Win** runtime over **OPC UA**, reads live process data, and sends operator commands back to the PLC. A browser HMI shows Zone 03 live and controls it, and shows Zone 04, an IoT edge zone fed by an ESP8266 soil node over MQTT, Node-RED and PostgreSQL. PostgreSQL holds the equipment and tag configuration.
 
-This is the web layer of the [Water Process Integration Testbed](../README.md). The same CODESYS runtime is also consumed by an **Ignition Perspective** project, so two independent OPC UA clients work against one PLC.
+This is the web layer of the [Water Process Integration Testbed](https://github.com/Radfar/water-process-integration-testbed). The Zone 04 data path lives in [wireless-irrigation-edge](https://github.com/Radfar/wireless-irrigation-edge). The same CODESYS runtime is also consumed by an **Ignition Perspective** project, so two independent OPC UA clients work against one PLC.
 ## Demo
 
 https://github.com/Radfar/building-irrigation-scada/blob/main/Docs/media/NodeOPC.mp4
