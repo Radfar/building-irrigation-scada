@@ -35,7 +35,8 @@ flowchart LR
 ```
 
 The browser cannot speak OPC UA, so Node.js sits in the middle: it owns the single PLC session, keeps the latest values in memory, and exposes them over REST.
-See [Current Implementation — Workflow and Review](Docs/current-implementation.md)
+
+See [Current Implementation — Workflow and Review](docs/current-implementation.md)
 ---
 
 ## What is live and what is not
