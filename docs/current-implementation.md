@@ -136,6 +136,3 @@ These are proposed design principles, not current capabilities.
 9. **Choose units explicitly.** A North American operator HMI may use US gpm for flow, %, psi, °F, Hz, V, and A as appropriate. Keep current PLC units internally until a documented conversion boundary exists.
 10. **Verify before claiming production readiness.** Test command races, Stop-in-Auto, interlocks, sensor/communication faults, reconnect, stale data, multiple clients, and restart/recovery.
 
-## 7. Next phase
-
-Before redesign, agree on the meaning of **Stop while Auto is selected**, then define command acknowledgement, authority across the web HMI and Ignition, tag quality/freshness, security boundaries, and the test cases that prove the requirements.
