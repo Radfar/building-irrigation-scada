@@ -22,11 +22,11 @@ async function main() {
     console.log("Controller properties:", plc.properties);
 
     // Replace this with an actual CCW global variable name.
-    const testTag = new Tag("P02_RUN_FB");
+    const testTag = new Tag("Z02_MOISTURE");
 
     await plc.readTag(testTag);
 
-    console.log(`P02_RUN_FB = ${testTag.value}`);
+    console.log(`Z02_MOISTURE = ${testTag.value}`);
   } catch (error) {
     console.error("Connection/read test failed:");
     console.error(error);
