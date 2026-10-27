@@ -23,6 +23,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "node-opcua-client": "^2.186.0",
-    "pg": "^8.23.0"
+    "pg": "^8.23.0",
+    "st-ethernet-ip": "^2.7.5"
   }
 }
