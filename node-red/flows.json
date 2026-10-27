@@ -1,0 +1,273 @@
+[
+    {
+        "id": "b6ed0f638ebdf7d6",
+        "type": "tab",
+        "label": "Micro850 Connectivity Test",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "df66b447766b3932",
+        "type": "debug",
+        "z": "b6ed0f638ebdf7d6",
+        "name": "Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 770,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "f710198ef9cca072",
+        "type": "cip-controller",
+        "z": "b6ed0f638ebdf7d6",
+        "name": "Micro850",
+        "endpoint": "11fc288af91e5b96",
+        "pollInterval": 0,
+        "x": 580,
+        "y": 400,
+        "wires": [
+            [
+                "3c6329b46e0f4a8d",
+                "befeebe20aa702d9"
+            ]
+        ]
+    },
+    {
+        "id": "3c6329b46e0f4a8d",
+        "type": "cip-read",
+        "z": "b6ed0f638ebdf7d6",
+        "name": "Moisture",
+        "endpoint": "11fc288af91e5b96",
+        "tagName": "Z02_MOISTURE",
+        "dataType": "REAL",
+        "pollInterval": "01000",
+        "x": 760,
+        "y": 400,
+        "wires": [
+            [
+                "df66b447766b3932"
+            ]
+        ]
+    },
+    {
+        "id": "cc8feb75428dad23",
+        "type": "inject",
+        "z": "b6ed0f638ebdf7d6",
+        "name": "send FALSE",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "P01",
+        "payload": "false",
+        "payloadType": "bool",
+        "x": 210,
+        "y": 440,
+        "wires": [
+            [
+                "df66b447766b3932",
+                "31eeb799b959db19"
+            ]
+        ]
+    },
+    {
+        "id": "31eeb799b959db19",
+        "type": "cip-write",
+        "z": "b6ed0f638ebdf7d6",
+        "name": "AUTO",
+        "endpoint": "11fc288af91e5b96",
+        "tagName": "Z02_AUTO",
+        "dataType": "auto",
+        "staticValue": "",
+        "useStaticValue": false,
+        "x": 390,
+        "y": 400,
+        "wires": [
+            [
+                "f710198ef9cca072"
+            ]
+        ]
+    },
+    {
+        "id": "b8a6276e423d2179",
+        "type": "inject",
+        "z": "b6ed0f638ebdf7d6",
+        "name": "Send TRUE",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "P01",
+        "payload": "true",
+        "payloadType": "bool",
+        "x": 210,
+        "y": 500,
+        "wires": [
+            [
+                "df66b447766b3932",
+                "31eeb799b959db19",
+                "3f05d67bd95a96cc"
+            ]
+        ]
+    },
+    {
+        "id": "9759b9a0984dace4",
+        "type": "cip-write",
+        "z": "b6ed0f638ebdf7d6",
+        "name": "moisture",
+        "endpoint": "11fc288af91e5b96",
+        "tagName": "Z02_MOISTURE",
+        "dataType": "auto",
+        "staticValue": "",
+        "useStaticValue": false,
+        "x": 460,
+        "y": 540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f4b24256b8d4e028",
+        "type": "inject",
+        "z": "b6ed0f638ebdf7d6",
+        "name": "moisture 29.8",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "P01",
+        "payload": "29.8",
+        "payloadType": "num",
+        "x": 270,
+        "y": 560,
+        "wires": [
+            [
+                "9759b9a0984dace4"
+            ]
+        ]
+    },
+    {
+        "id": "aef7dbb35f9107da",
+        "type": "inject",
+        "z": "b6ed0f638ebdf7d6",
+        "name": "moisture 70.2",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "P01",
+        "payload": "70.2",
+        "payloadType": "num",
+        "x": 270,
+        "y": 620,
+        "wires": [
+            [
+                "9759b9a0984dace4"
+            ]
+        ]
+    },
+    {
+        "id": "befeebe20aa702d9",
+        "type": "cip-read",
+        "z": "b6ed0f638ebdf7d6",
+        "name": "Flow",
+        "endpoint": "11fc288af91e5b96",
+        "tagName": "rFlowTarget",
+        "dataType": "auto",
+        "pollInterval": "01000",
+        "x": 750,
+        "y": 460,
+        "wires": [
+            [
+                "df66b447766b3932"
+            ]
+        ]
+    },
+    {
+        "id": "3f05d67bd95a96cc",
+        "type": "cip-write",
+        "z": "b6ed0f638ebdf7d6",
+        "name": "Z02_SIM_ENABLE",
+        "endpoint": "11fc288af91e5b96",
+        "tagName": "Z02_SIM_ENABLE",
+        "dataType": "auto",
+        "staticValue": "",
+        "useStaticValue": false,
+        "x": 430,
+        "y": 340,
+        "wires": [
+            [
+                "f710198ef9cca072"
+            ]
+        ]
+    },
+    {
+        "id": "11fc288af91e5b96",
+        "type": "cip-endpoint",
+        "z": "b6ed0f638ebdf7d6",
+        "name": "Micro850_Test",
+        "address": "192.168.203.1",
+        "port": 44818,
+        "slot": "",
+        "routingPath": "",
+        "connTimeout": 5000,
+        "retryInterval": 5000,
+        "maxRetryInterval": 60000,
+        "keepAlive": 30000,
+        "autoConnect": true,
+        "allowDynamic": false,
+        "useMicro800": true
+    },
+    {
+        "id": "0acea208b12aaef8",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-cip-suite": "0.1.0"
+        }
+    }
+]
