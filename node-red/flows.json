@@ -20,8 +20,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 770,
-        "y": 540,
+        "x": 750,
+        "y": 580,
         "wires": []
     },
     {
@@ -32,7 +32,7 @@
         "endpoint": "11fc288af91e5b96",
         "pollInterval": 0,
         "x": 580,
-        "y": 400,
+        "y": 520,
         "wires": [
             [
                 "3c6329b46e0f4a8d",
@@ -50,7 +50,7 @@
         "dataType": "REAL",
         "pollInterval": "01000",
         "x": 760,
-        "y": 400,
+        "y": 460,
         "wires": [
             [
                 "df66b447766b3932"
@@ -78,8 +78,8 @@
         "topic": "P01",
         "payload": "false",
         "payloadType": "bool",
-        "x": 210,
-        "y": 440,
+        "x": 170,
+        "y": 460,
         "wires": [
             [
                 "df66b447766b3932",
@@ -97,8 +97,8 @@
         "dataType": "auto",
         "staticValue": "",
         "useStaticValue": false,
-        "x": 390,
-        "y": 400,
+        "x": 370,
+        "y": 520,
         "wires": [
             [
                 "f710198ef9cca072"
@@ -126,7 +126,7 @@
         "topic": "P01",
         "payload": "true",
         "payloadType": "bool",
-        "x": 210,
+        "x": 170,
         "y": 500,
         "wires": [
             [
@@ -146,8 +146,8 @@
         "dataType": "auto",
         "staticValue": "",
         "useStaticValue": false,
-        "x": 460,
-        "y": 540,
+        "x": 380,
+        "y": 580,
         "wires": [
             []
         ]
@@ -173,7 +173,7 @@
         "topic": "P01",
         "payload": "29.8",
         "payloadType": "num",
-        "x": 270,
+        "x": 170,
         "y": 560,
         "wires": [
             [
@@ -202,8 +202,8 @@
         "topic": "P01",
         "payload": "70.2",
         "payloadType": "num",
-        "x": 270,
-        "y": 620,
+        "x": 170,
+        "y": 600,
         "wires": [
             [
                 "9759b9a0984dace4"
@@ -220,7 +220,7 @@
         "dataType": "auto",
         "pollInterval": "01000",
         "x": 750,
-        "y": 460,
+        "y": 520,
         "wires": [
             [
                 "df66b447766b3932"
@@ -237,8 +237,8 @@
         "dataType": "auto",
         "staticValue": "",
         "useStaticValue": false,
-        "x": 430,
-        "y": 340,
+        "x": 410,
+        "y": 460,
         "wires": [
             [
                 "f710198ef9cca072"
@@ -263,7 +263,7 @@
         "useMicro800": true
     },
     {
-        "id": "0acea208b12aaef8",
+        "id": "5246e6dd71b76457",
         "type": "global-config",
         "env": [],
         "modules": {

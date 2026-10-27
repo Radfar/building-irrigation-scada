@@ -1,12 +1,9 @@
 const { Controller, Tag } = require('st-ethernet-ip');
-
-const PLC_IP = '192.168.203.1';          // same host as your Node-RED CIP config
+const PLC_IP = '127.0.0.1';          // same host as your Node-RED CIP config
 const plc = new Controller(false);   // unconnected messaging (my guess for Micro800)
-
 const names = ['Z02_MOISTURE', 'Z02_FLOW', 'Z02_AUTO',
                'Z02_RUNNING', 'Z02_VALVE', 'Z02_FAULT'];
 const tags = names.map(n => new Tag(n));
-
 (async () => {
   try {
     await plc.connect(PLC_IP, null);   // Micro800 has no backplane slot
