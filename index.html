@@ -1938,69 +1938,30 @@
 
 
 
-                        <!-- ZONE 02 -->
+                        <!-- ZONE 02 (live: Rockwell Micro850) -->
+<div class="zone">
 
-                        <div class="zone">
+    <div class="zone-head">
+        <span class="zone-name">Zone 02 • Courtyard</span>
+        <span id="z2-status" class="status warn">NO DATA</span>
+    </div>
 
-                            <div class="zone-head">
+    <div class="zone-data">
+        <div class="metric">Moisture<strong id="z2-moisture">--</strong></div>
+        <div class="metric">Flow<strong id="z2-flow">--</strong></div>
+        <div class="metric">Valve<strong id="z2-valve">--</strong></div>
+    </div>
 
-                                <span class="zone-name">
-                                    Zone 02 • Courtyard
-                                </span>
+    <div class="bar"><span id="z2-bar" style="width:0%"></span></div>
 
-                                <span class="status ok">
-                                    RUNNING
-                                </span>
+    <div class="controls">
+        <button id="z2-btn-start" onclick="zone2Command('Z02_START')">Start</button>
+        <button id="z2-btn-stop" onclick="zone2Command('Z02_STOP')">Stop</button>
+        <button id="z2-btn-mode" onclick="zone2ToggleMode()">--</button>
+        <button id="z2-btn-reset" onclick="zone2Command('Z02_FAULT_RESET')" style="display:none">Reset</button>
+    </div>
 
-                            </div>
-
-
-                            <div class="zone-data">
-
-                                <div class="metric">
-                                    Moisture
-                                    <strong>42%</strong>
-                                </div>
-
-                                <div class="metric">
-                                    Flow
-                                    <strong>21.3 L/min</strong>
-                                </div>
-
-                                <div class="metric">
-                                    Valve
-                                    <strong>100%</strong>
-                                </div>
-
-                            </div>
-
-
-                            <div class="bar">
-                                <span style="width:42%"></span>
-                            </div>
-
-
-                            <div class="controls">
-
-                                <button onclick="toggle(this)">
-                                    Stop
-                                </button>
-
-                                <button>
-                                    Manual
-                                </button>
-
-                                <button>
-                                    Details
-                                </button>
-
-                            </div>
-
-                        </div>
-
-
-
-                        <!-- ZONE 03 -->
+</div>
 
                         <!-- ZONE 03 -->
 <div class="zone">
@@ -2830,7 +2791,7 @@
 ================================================================ -->
 
 <script src="js/tags.js"></script>
-
+<script src="js/zone02.js"></script>
 </body>
 
 </html>

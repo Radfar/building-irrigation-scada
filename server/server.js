@@ -1,18 +1,17 @@
 const { startOpcua, stopOpcua, sendCommand, zone3, live } = require("./opcua");
+const zone02 = require('./drivers/micro800/zone02');
 const express = require("express");
-
 const cors = require("cors");
-
 const {
     pool,
     testDatabaseConnection
 } = require("./database");
 
-
 const app = express();
-
 const PORT = 3000;
 //const staleSeconds = Number(process.env.ZONE4_STALE_SECONDS) || 300;
+
+zone02.start();
 
 
 /*
@@ -31,6 +30,17 @@ app.post("/api/zone3/command", async (req, res) => {
     catch (err) {
         res.status(err.status || 500).json({ ok: false, error: err.message });
     }
+});
+
+app.get('/api/zone02', (req, res) => res.json(zone02.getObservations()));
+
+app.post('/api/zone02/command', async (req, res) => {
+  try {
+    await zone02.command(req.body.tag, req.body.value);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(e.status || 500).json({ ok: false, error: e.status ? e.message : 'Internal error' });
+  }
 });
 
 /*
