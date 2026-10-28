@@ -27,3 +27,6 @@ A future `GET /api/health` should report API, PostgreSQL, and each source indepe
 `/api`, `/api/equipment`, `/api/tags`, `/api/tags/:tagName/value`, `/api/zone3`, `/api/live`, `POST /api/zone3/command`, `/api/zone4`.
 
 Suggested errors: `400` invalid request; `404` unknown tag/resource; `409` interlock violation; `502` upstream rejection; `503` required integration unavailable; `500` unexpected internal failure. Never expose stack traces, credentials, or raw DB errors to the browser.
+Units
+
+engineeringUnit is always the canonical unit for the signal (US customary): flow gpm, volume gal, pressure psi, temperature °F, duration s, and % for moisture, level, valve position and pump speed. Source adapters convert on ingestion using server/contracts/units.js. Clients must display the returned unit and must not hardcode or convert units.
