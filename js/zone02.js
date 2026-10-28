@@ -15,11 +15,11 @@
     el.className = 'status ' + cls;
   }
 
-  function render(degraded) {
+function render(degraded) {
     const m = Number(z2.Z02_MOISTURE);
-    fmt('Z02_MOISTURE', 1).textContent = isNaN(m) ? '--' : m.toFixed(1) + '%';
-    fmt('Z02_FLOW', 1).textContent     = (Number(z2.Z02_FLOW) || 0).toFixed(1) + ' gpm';
-    fmt('Z02_VALVE', 0).textContent    = (Number(z2.Z02_VALVE) || 0).toFixed(0) + '%';
+    $('z2-moisture').textContent = fmt('Z02_MOISTURE', 1);
+    $('z2-flow').textContent     = fmt('Z02_FLOW', 1);
+    $('z2-valve').textContent    = fmt('Z02_VALVE', 0);
     $('z2-bar').style.width      = Math.max(0, Math.min(100, m || 0)) + '%';
 
     if (degraded)             setStatus('NO DATA', 'warn');
