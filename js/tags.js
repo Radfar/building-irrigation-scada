@@ -599,7 +599,8 @@ async function updateZone4() {
     }
 
     try {
-        const response = await fetch(`${API_BASE}/api/zone4`);
+        //const response = await fetch(`${API_BASE}/api/zone4`);
+        const response = await fetch(`${API_BASE}/api/zone4/live`);
 
         if (!response.ok) {
             throw new Error(`HTTP error: ${response.status}`);
@@ -621,11 +622,25 @@ async function updateZone4() {
             tags.zones.zone04.moisture = moisturePct;
         }
 
-        /* connected = false means the last reading is stale, not an error */
+        /* connected = false means the last reading is stale, not an error 
         if (z.connected) {
             badge.textContent = "ONLINE";
             badge.className   = "status ok";
         }
+        else {
+            badge.textContent = "STALE";
+            badge.className   = "status warn";
+        }*/
+
+
+        if (!valid) {
+            badge.textContent = "NO DATA";
+            badge.className   = "status alarm";
+            }
+        else if (z.connected) {
+            badge.textContent = "ONLINE";
+            badge.className   = "status ok";
+            }
         else {
             badge.textContent = "STALE";
             badge.className   = "status warn";
