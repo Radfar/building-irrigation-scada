@@ -589,72 +589,115 @@ function formatAge(seconds) {
 async function updateZone4() {
     const badge    = document.getElementById("z4-status");
     const moisture = document.getElementById("z4-moisture");
+    const flow     = document.getElementById("z4-flow");
+    const valve    = document.getElementById("z4-valve");
+    const mode     = document.getElementById("z4-mode");
     const node     = document.getElementById("z4-node");
     const age      = document.getElementById("z4-age");
     const bar      = document.getElementById("z4-bar");
 
-    /* Card not in index.html yet */
-    if (!badge) {
-        return;
-    }
+    if (!badge) return;
 
     try {
-        //const response = await fetch(`${API_BASE}/api/zone4`);
-        const response = await fetch(`${API_BASE}/api/zone4/live`);
-
-        if (!response.ok) {
-            throw new Error(`HTTP error: ${response.status}`);
-        }
+        const response = await fetch(`${API_BASE}/api/zone4/state`);
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
 
         const z = await response.json();
-
-        const moisturePct = Number(z.moisture);
-        const valid       = Number.isFinite(moisturePct);
-        const barPct      = valid ? Math.min(Math.max(moisturePct, 0), 100) : 0;
+        const valid = Number.isFinite(Number(z.moisture));
+        const moisturePct = valid ? Number(z.moisture) : 0;
 
         if (moisture) moisture.textContent = valid ? fmt(moisturePct, "%") : "--";
-        if (bar)      bar.style.width      = barPct + "%";
-        if (node)     node.textContent     = z.nodeId || "--";
-        if (age)      age.textContent      = formatAge(Number(z.ageSeconds));
+        if (flow) flow.textContent = `${Number(z.flow).toFixed(1)} L/min • SIM`;
+        if (valve) valve.textContent = `${Number(z.valveCommand).toFixed(0)}% • CMD`;
+        if (mode) mode.textContent = z.mode || "--";
+        if (node) node.textContent = "soil01";
+        if (age) age.textContent = formatAge(Number(z.moistureAgeSeconds));
+        if (bar) bar.style.width = Math.max(0, Math.min(100, moisturePct)) + "%";
 
-        /* Keep the local tag database in sync */
-        if (valid) {
-            tags.zones.zone04.moisture = moisturePct;
-        }
+        if (valid) tags.zones.zone04.moisture = moisturePct;
+        tags.zones.zone04.flow = Number(z.flow) || 0;
+        tags.zones.zone04.valve = Number(z.valveCommand) || 0;
+        tags.zones.zone04.running = !!z.wateringActive;
 
-        /* connected = false means the last reading is stale, not an error 
-        if (z.connected) {
-            badge.textContent = "ONLINE";
-            badge.className   = "status ok";
-        }
-        else {
-            badge.textContent = "STALE";
-            badge.className   = "status warn";
-        }*/
+        badge.textContent = z.status || "NO DATA";
+        badge.className = z.status === "RUNNING"
+            ? "status ok"
+            : z.status === "FAULT" || z.status === "NO DATA"
+                ? "status alarm"
+                : "status warn";
+
+        updateZone4Buttons(z);
+    }
+    catch (error) {
+        badge.textContent = "NO DATA";
+        badge.className = "status alarm";
+        if (moisture) moisture.textContent = "--";
+        if (flow) flow.textContent = "--";
+        if (valve) valve.textContent = "--";
+        if (mode) mode.textContent = "--";
+        if (node) node.textContent = "--";
+        if (age) age.textContent = "--";
+        if (bar) bar.style.width = "0%";
+        updateZone4Buttons(null);
+    }
+}
 
 
-        if (!valid) {
-            badge.textContent = "NO DATA";
-            badge.className   = "status alarm";
-            }
-        else if (z.connected) {
-            badge.textContent = "ONLINE";
-            badge.className   = "status ok";
-            }
-        else {
-            badge.textContent = "STALE";
-            badge.className   = "status warn";
+/* ================================================================
+   ZONE 04 - OPERATOR COMMANDS (web -> Node.js simulation)
+================================================================ */
+
+async function zone4Command(command) {
+    try {
+        const response = await fetch(`${API_BASE}/api/zone4/command`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ command })
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+            showOperatorMessage(result.error || "Zone 04 command failed");
         }
     }
     catch (error) {
-        /* Backend unreachable or bad response */
-        badge.textContent = "NO DATA";
-        badge.className   = "status alarm";
+        showOperatorMessage("Zone 04 command failed: backend not reachable");
+    }
 
-        if (moisture) moisture.textContent = "--";
-        if (node)     node.textContent     = "--";
-        if (age)      age.textContent      = "--";
-        if (bar)      bar.style.width      = "0%";
+    updateZone4();
+}
+
+
+function zone4ToggleMode() {
+    const mode = document.getElementById("z4-mode")?.textContent;
+    zone4Command(mode === "AUTO" ? "manual" : "auto");
+}
+
+
+function updateZone4Buttons(z) {
+    const start = document.getElementById("z4-btn-start");
+    const stop  = document.getElementById("z4-btn-stop");
+    const mode  = document.getElementById("z4-btn-mode");
+    const reset = document.getElementById("z4-btn-reset");
+
+    const unavailable = !z || !z.permissive;
+
+    if (start) {
+        start.disabled =
+            unavailable || z.mode !== "MANUAL" || z.wateringActive;
+    }
+
+    if (stop) {
+        stop.disabled = unavailable || (!z.wateringActive && !z.autoDemand);
+    }
+
+    if (mode) {
+        mode.disabled = !z || !z.moistureConnected;
+        mode.textContent = !z ? "--" : z.mode;
+    }
+
+    if (reset) {
+        reset.style.display = z && z.fault ? "" : "none";
     }
 }
 
