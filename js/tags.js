@@ -666,13 +666,10 @@ async function zone4Command(command) {
 
     updateZone4();
 }
-
-
 function zone4ToggleMode() {
-    const mode = document.getElementById("z4-mode")?.textContent;
+    const mode = document.getElementById("z4-btn-mode")?.textContent;
     zone4Command(mode === "AUTO" ? "manual" : "auto");
 }
-
 
 function updateZone4Buttons(z) {
     const start = document.getElementById("z4-btn-start");
