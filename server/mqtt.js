@@ -24,28 +24,11 @@ let brokerConnected = false;
 let deviceStatus = null;
 const pendingCommands = new Map();
 
-// Save a validated reading to the existing PostgreSQL historian.
-/*async function saveZone4Reading(moisture, timestamp) {
-    const result = await pool.query(
-        `INSERT INTO tag_values (tag_id, value, quality, timestamp)
-         SELECT id, $1, $2, $3
-         FROM tags
-         WHERE tag_name = $4
-         RETURNING id, tag_id`,
-        [moisture, "GOOD", timestamp, TAG_NAME]
-    );
+// Historian quality describes the validity of the measurement when received.
+// Live quality may become UNCERTAIN when the last valid reading becomes stale.
+const QUALITY_GOOD = "GOOD";
+const QUALITY_UNCERTAIN = "UNCERTAIN";
 
-    if (result.rowCount === 0) {
-        throw new Error(
-            `Database tag "${TAG_NAME}" was not found in the tags table`
-        );
-    }
-
-    console.log(
-        `Zone 4 saved to PostgreSQL: ${moisture}% ` +
-        `(history row ID: ${result.rows[0].id})`
-    );
-}*/
 async function saveZone4Reading(moisture, timestamp) {
     if (!Number.isFinite(moisture)) {
         throw new Error("Invalid Zone 04 moisture value");
@@ -63,7 +46,7 @@ async function saveZone4Reading(moisture, timestamp) {
          FROM tags
          WHERE tag_name = $4
          RETURNING id, tag_id`,
-        [moisture, "GOOD", readingTimestamp, TAG_NAME]
+        [moisture, QUALITY_GOOD, readingTimestamp, TAG_NAME]
     );
 
     if (result.rowCount === 0) {
@@ -186,7 +169,7 @@ function startMqtt() {
             tagName: TAG_NAME,
             moisture,
             unit: "%",
-            quality: "GOOD",
+            quality: QUALITY_GOOD,
             timestamp: timestamp.toISOString(),
             source: "mqtt",
             topic
@@ -289,14 +272,20 @@ function getZone4Live() {
         Math.floor((Date.now() - timestampMs) / 1000)
     );
 
+    const dataFresh = ageSeconds <= STALE_SECONDS;
+
     return {
         ...latestReading,
+        // The stored historian row retains GOOD quality at acquisition time.
+        // The live value becomes UNCERTAIN when it exceeds the freshness limit.
+        quality: dataFresh ? latestReading.quality : QUALITY_UNCERTAIN,
+        measurementQuality: latestReading.quality,
+        dataFresh,
         brokerConnected,
         deviceMode: deviceStatus?.mode || null,
         deviceOnline: deviceStatus?.online ?? null,
         ageSeconds,
-        connected:
-            brokerConnected && ageSeconds <= STALE_SECONDS
+        connected: brokerConnected && dataFresh
     };
 }
 
