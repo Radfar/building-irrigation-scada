@@ -359,8 +359,61 @@ function updateHMI() {
    OPERATOR MESSAGE
 ================================================================ */
 
-function showOperatorMessage(message) {
-    alert(message);
+let operatorToastTimer = null;
+
+function showOperatorMessage(message, type = "info") {
+    let toast = document.getElementById("operator-toast");
+
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "operator-toast";
+        toast.setAttribute("role", "status");
+        toast.setAttribute("aria-live", "polite");
+
+        Object.assign(toast.style, {
+            position: "fixed",
+            right: "24px",
+            bottom: "24px",
+            zIndex: "10000",
+            maxWidth: "min(420px, calc(100vw - 32px))",
+            padding: "14px 18px",
+            borderRadius: "10px",
+            border: "1px solid rgba(255,255,255,.14)",
+            boxShadow: "0 10px 30px rgba(0,0,0,.35)",
+            color: "#f4f7fb",
+            background: "#26364d",
+            fontSize: "14px",
+            lineHeight: "1.45",
+            opacity: "0",
+            transform: "translateY(8px)",
+            transition: "opacity .2s ease, transform .2s ease",
+            pointerEvents: "none"
+        });
+
+        document.body.appendChild(toast);
+    }
+
+    const palette = {
+        success: { background: "#123d32", border: "1px solid #28785d" },
+        error:   { background: "#48252c", border: "1px solid #a74755" },
+        info:    { background: "#26364d", border: "1px solid #45617f" }
+    };
+    const colors = palette[type] || palette.info;
+
+    toast.style.background = colors.background;
+    toast.style.border = colors.border;
+    toast.textContent = message;
+    toast.style.opacity = "1";
+    toast.style.transform = "translateY(0)";
+
+    if (operatorToastTimer) {
+        clearTimeout(operatorToastTimer);
+    }
+
+    operatorToastTimer = setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(8px)";
+    }, 3500);
 }
 
 
@@ -657,15 +710,15 @@ async function zone4Command(command) {
 
         const result = await response.json();
         if (!response.ok || !result.ok) {
-            showOperatorMessage(result.error || "Zone 04 command failed");
+            showOperatorMessage(result.error || "Zone 04 command failed", "error");
         } else if (result.acknowledged) {
-            showOperatorMessage(`ESP8266 acknowledged ${result.deviceMode} mode`);
+            showOperatorMessage(`ESP8266 acknowledged ${result.deviceMode} mode`, "success");
         } else if (result.simulated) {
-            showOperatorMessage("Zone 04 process command simulated locally");
+            showOperatorMessage("Zone 04 process command simulated locally", "info");
         }
     }
     catch (error) {
-        showOperatorMessage("Zone 04 command failed: backend not reachable");
+        showOperatorMessage("Zone 04 command failed: backend not reachable", "error");
     }
 
     updateZone4();
