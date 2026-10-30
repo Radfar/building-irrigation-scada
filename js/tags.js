@@ -644,7 +644,7 @@ async function updateZone4() {
 
 
 /* ================================================================
-   ZONE 04 - OPERATOR COMMANDS (web -> Node.js simulation)
+   ZONE 04 - OPERATOR COMMANDS (web -> Node.js -> MQTT -> ESP8266)
 ================================================================ */
 
 async function zone4Command(command) {
@@ -658,6 +658,10 @@ async function zone4Command(command) {
         const result = await response.json();
         if (!response.ok || !result.ok) {
             showOperatorMessage(result.error || "Zone 04 command failed");
+        } else if (result.acknowledged) {
+            showOperatorMessage(`ESP8266 acknowledged ${result.deviceMode} mode`);
+        } else if (result.simulated) {
+            showOperatorMessage("Zone 04 process command simulated locally");
         }
     }
     catch (error) {
@@ -689,7 +693,7 @@ function updateZone4Buttons(z) {
     }
 
     if (mode) {
-        mode.disabled = !z || !z.moistureConnected;
+        mode.disabled = !z || !z.mqttBrokerConnected;
         mode.textContent = !z ? "--" : z.mode;
     }
 
