@@ -9,8 +9,11 @@ const {
 const {
     startMqtt,
     stopMqtt,
-    getZone4Live
+    getZone4Live,
+    publishZone4Mode
 } = require("./mqtt");
+const zone04 = require("./zone04");
+const { startBrokerDiscovery, stopBrokerDiscovery } = require("./mqtt-discovery");
 
 const app = express();
 const PORT = 3000;
@@ -48,6 +51,55 @@ app.post('/api/zone02/command', async (req, res) => {
   }
 });
 
+
+// Zone 04 — supervisory process state (real moisture + simulated process)
+app.get("/api/zone4/state", (req, res) => {
+    res.json(zone04.getState(getZone4Live()));
+});
+
+app.post("/api/zone4/command", async (req, res) => {
+    try {
+        const command = String(req.body.command || "").toLowerCase();
+        const mqttLive = getZone4Live();
+
+        // Mode changes are sent to the ESP8266 and are accepted only
+        // after its command_result acknowledgement returns over MQTT.
+        if (command === "auto" || command === "manual") {
+            const requestedMode = command === "auto" ? "AUTO" : "MANUAL";
+            const acknowledgement = await publishZone4Mode(requestedMode);
+
+            if (acknowledgement.accepted !== true) {
+                const error = new Error(
+                    acknowledgement.message || "ESP8266 rejected the mode command"
+                );
+                error.status = 409;
+                throw error;
+            }
+
+            const state = zone04.command(command, {
+                ...getZone4Live(),
+                deviceMode: acknowledgement.mode
+            });
+
+            return res.json({
+                ok: true,
+                acknowledged: true,
+                commandId: acknowledgement.command_id,
+                deviceMode: acknowledgement.mode,
+                state
+            });
+        }
+
+        // START/STOP/RESET remain local process simulation commands.
+        const result = zone04.command(command, mqttLive);
+        return res.json({ ok: true, simulated: true, state: result });
+    } catch (err) {
+        res.status(err.status || 500).json({
+            ok: false,
+            error: err.status ? err.message : "Internal error"
+        });
+    }
+});
 
 // Zone 04 — latest reading received directly from MQTT
 app.get("/api/zone4/live", (req, res) => {
@@ -367,6 +419,7 @@ app.get("/api/tags/:tagName/value", async (req, res) => {
  */
 startOpcua().catch(err => console.error("OPC UA start failed:", err.message));
 startMqtt();
+startBrokerDiscovery();
 
 app.listen(PORT, async () => {
 
@@ -382,7 +435,8 @@ app.listen(PORT, async () => {
 process.on("SIGINT", async () => {
     await Promise.all([
         stopOpcua(),
-        stopMqtt()
+        stopMqtt(),
+        stopBrokerDiscovery()
     ]);
 
     process.exit(0);

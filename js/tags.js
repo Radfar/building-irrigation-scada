@@ -359,8 +359,61 @@ function updateHMI() {
    OPERATOR MESSAGE
 ================================================================ */
 
-function showOperatorMessage(message) {
-    alert(message);
+let operatorToastTimer = null;
+
+function showOperatorMessage(message, type = "info") {
+    let toast = document.getElementById("operator-toast");
+
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "operator-toast";
+        toast.setAttribute("role", "status");
+        toast.setAttribute("aria-live", "polite");
+
+        Object.assign(toast.style, {
+            position: "fixed",
+            right: "24px",
+            bottom: "24px",
+            zIndex: "10000",
+            maxWidth: "min(420px, calc(100vw - 32px))",
+            padding: "14px 18px",
+            borderRadius: "10px",
+            border: "1px solid rgba(255,255,255,.14)",
+            boxShadow: "0 10px 30px rgba(0,0,0,.35)",
+            color: "#f4f7fb",
+            background: "#26364d",
+            fontSize: "14px",
+            lineHeight: "1.45",
+            opacity: "0",
+            transform: "translateY(8px)",
+            transition: "opacity .2s ease, transform .2s ease",
+            pointerEvents: "none"
+        });
+
+        document.body.appendChild(toast);
+    }
+
+    const palette = {
+        success: { background: "#123d32", border: "1px solid #28785d" },
+        error:   { background: "#48252c", border: "1px solid #a74755" },
+        info:    { background: "#26364d", border: "1px solid #45617f" }
+    };
+    const colors = palette[type] || palette.info;
+
+    toast.style.background = colors.background;
+    toast.style.border = colors.border;
+    toast.textContent = message;
+    toast.style.opacity = "1";
+    toast.style.transform = "translateY(0)";
+
+    if (operatorToastTimer) {
+        clearTimeout(operatorToastTimer);
+    }
+
+    operatorToastTimer = setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(8px)";
+    }, 3500);
 }
 
 
@@ -589,72 +642,140 @@ function formatAge(seconds) {
 async function updateZone4() {
     const badge    = document.getElementById("z4-status");
     const moisture = document.getElementById("z4-moisture");
+    const flow     = document.getElementById("z4-flow");
+    const valve    = document.getElementById("z4-valve");
+    const mode     = document.getElementById("z4-mode");
     const node     = document.getElementById("z4-node");
     const age      = document.getElementById("z4-age");
     const bar      = document.getElementById("z4-bar");
 
-    /* Card not in index.html yet */
-    if (!badge) {
+    if (!badge) return;
+
+    try {
+        const response = await fetch(`${API_BASE}/api/zone4/state`);
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+
+        const z = await response.json();
+        const valid = Number.isFinite(Number(z.moisture));
+        const moisturePct = valid ? Number(z.moisture) : 0;
+
+        if (moisture) moisture.textContent = valid ? fmt(moisturePct, "%") : "--";
+        if (flow) flow.textContent = `${Number(z.flow).toFixed(1)} L/min`;
+        if (valve) valve.textContent = `${Number(z.valveCommand).toFixed(0)}%`;
+        if (mode) mode.textContent = z.mode || "--";
+        if (node) node.textContent = "soil01";
+        if (age) age.textContent = formatAge(Number(z.moistureAgeSeconds));
+        if (bar) bar.style.width = Math.max(0, Math.min(100, moisturePct)) + "%";
+
+        if (valid) tags.zones.zone04.moisture = moisturePct;
+        tags.zones.zone04.flow = Number(z.flow) || 0;
+        tags.zones.zone04.valve = Number(z.valveCommand) || 0;
+        tags.zones.zone04.running = !!z.wateringActive;
+
+        badge.textContent = z.status || "NO DATA";
+        badge.className = z.status === "RUNNING"
+            ? "status ok"
+            : z.status === "FAULT" || z.status === "NO DATA"
+                ? "status alarm"
+                : "status warn";
+
+        updateZone4Buttons(z);
+    }
+    catch (error) {
+        badge.textContent = "NO DATA";
+        badge.className = "status alarm";
+        if (moisture) moisture.textContent = "--";
+        if (flow) flow.textContent = "--";
+        if (valve) valve.textContent = "--";
+        if (mode) mode.textContent = "--";
+        if (node) node.textContent = "--";
+        if (age) age.textContent = "--";
+        if (bar) bar.style.width = "0%";
+        updateZone4Buttons(null);
+    }
+}
+
+
+/* ================================================================
+   ZONE 04 - OPERATOR COMMANDS (web -> Node.js -> MQTT -> ESP8266)
+================================================================ */
+
+let zone4ModeCommandPending = false;
+
+async function zone4Command(command) {
+    const isModeCommand = command === "auto" || command === "manual";
+    const modeButton = document.getElementById("z4-btn-mode");
+
+    // Prevent duplicate AUTO/MANUAL requests while waiting for the ESP acknowledgement.
+    if (isModeCommand && zone4ModeCommandPending) {
         return;
     }
 
+    if (isModeCommand) {
+        zone4ModeCommandPending = true;
+        if (modeButton) {
+            modeButton.disabled = true;
+            modeButton.textContent = "SENDING...";
+        }
+    }
+
     try {
-        //const response = await fetch(`${API_BASE}/api/zone4`);
-        const response = await fetch(`${API_BASE}/api/zone4/live`);
+        const response = await fetch(`${API_BASE}/api/zone4/command`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ command })
+        });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error: ${response.status}`);
-        }
-
-        const z = await response.json();
-
-        const moisturePct = Number(z.moisture);
-        const valid       = Number.isFinite(moisturePct);
-        const barPct      = valid ? Math.min(Math.max(moisturePct, 0), 100) : 0;
-
-        if (moisture) moisture.textContent = valid ? fmt(moisturePct, "%") : "--";
-        if (bar)      bar.style.width      = barPct + "%";
-        if (node)     node.textContent     = z.nodeId || "--";
-        if (age)      age.textContent      = formatAge(Number(z.ageSeconds));
-
-        /* Keep the local tag database in sync */
-        if (valid) {
-            tags.zones.zone04.moisture = moisturePct;
-        }
-
-        /* connected = false means the last reading is stale, not an error 
-        if (z.connected) {
-            badge.textContent = "ONLINE";
-            badge.className   = "status ok";
-        }
-        else {
-            badge.textContent = "STALE";
-            badge.className   = "status warn";
-        }*/
-
-
-        if (!valid) {
-            badge.textContent = "NO DATA";
-            badge.className   = "status alarm";
-            }
-        else if (z.connected) {
-            badge.textContent = "ONLINE";
-            badge.className   = "status ok";
-            }
-        else {
-            badge.textContent = "STALE";
-            badge.className   = "status warn";
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+            showOperatorMessage(result.error || "Zone 04 command failed", "error");
+        } else if (result.acknowledged) {
+            showOperatorMessage(`ESP8266 acknowledged ${result.deviceMode} mode`, "success");
+        } else if (result.simulated) {
+            showOperatorMessage("Zone 04 process command simulated locally", "info");
         }
     }
     catch (error) {
-        /* Backend unreachable or bad response */
-        badge.textContent = "NO DATA";
-        badge.className   = "status alarm";
+        showOperatorMessage("Zone 04 command failed: backend not reachable", "error");
+    }
+    finally {
+        if (isModeCommand) {
+            zone4ModeCommandPending = false;
+        }
+        updateZone4();
+    }
+}
+function zone4ToggleMode() {
+    const mode = document.getElementById("z4-btn-mode")?.textContent;
+    zone4Command(mode === "AUTO" ? "manual" : "auto");
+}
 
-        if (moisture) moisture.textContent = "--";
-        if (node)     node.textContent     = "--";
-        if (age)      age.textContent      = "--";
-        if (bar)      bar.style.width      = "0%";
+function updateZone4Buttons(z) {
+    const start = document.getElementById("z4-btn-start");
+    const stop  = document.getElementById("z4-btn-stop");
+    const mode  = document.getElementById("z4-btn-mode");
+    const reset = document.getElementById("z4-btn-reset");
+
+    const unavailable = !z || !z.permissive;
+
+    if (start) {
+        start.disabled =
+            unavailable || z.mode !== "MANUAL" || z.wateringActive;
+    }
+
+    if (stop) {
+        stop.disabled = unavailable || (!z.wateringActive && !z.autoDemand);
+    }
+
+    if (mode) {
+        mode.disabled = zone4ModeCommandPending || !z || !z.mqttBrokerConnected;
+        mode.textContent = zone4ModeCommandPending
+            ? "SENDING..."
+            : !z ? "--" : z.mode;
+    }
+
+    if (reset) {
+        reset.style.display = z && z.fault ? "" : "none";
     }
 }
 

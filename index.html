@@ -2000,7 +2000,6 @@
 </div>
 
                         <!-- ZONE 04 -->
-<!-- ZONE 04 -->
 <div class="zone">
 
     <div class="zone-head">
@@ -2010,21 +2009,26 @@
 
     <div class="zone-data">
         <div class="metric">
-            Moisture
-            <strong id="z4-moisture">--</strong>
+            Moisture <strong id="z4-moisture">--</strong>
         </div>
         <div class="metric">
-            Node
-            <strong id="z4-node">--</strong>
+            Flow <strong id="z4-flow">--</strong>
         </div>
         <div class="metric">
-            Last update
-            <strong id="z4-age">--</strong>
+            Valve <strong id="z4-valve">--</strong>
         </div>
     </div>
 
     <div class="bar">
         <span id="z4-bar" style="width:0%"></span>
+    </div>
+
+
+    <div class="controls">
+        <button id="z4-btn-start" onclick="zone4Command('start')">Start</button>
+        <button id="z4-btn-stop" onclick="zone4Command('stop')">Stop</button>
+        <button id="z4-btn-mode" onclick="zone4ToggleMode()">--</button>
+        <button id="z4-btn-reset" onclick="zone4Command('faultReset')" style="display:none">Reset</button>
     </div>
 
 </div>
