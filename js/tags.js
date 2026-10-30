@@ -607,8 +607,8 @@ async function updateZone4() {
         const moisturePct = valid ? Number(z.moisture) : 0;
 
         if (moisture) moisture.textContent = valid ? fmt(moisturePct, "%") : "--";
-        if (flow) flow.textContent = `${Number(z.flow).toFixed(1)} L/min • SIM`;
-        if (valve) valve.textContent = `${Number(z.valveCommand).toFixed(0)}% • CMD`;
+        if (flow) flow.textContent = `${Number(z.flow).toFixed(1)} L/min`;
+        if (valve) valve.textContent = `${Number(z.valveCommand).toFixed(0)}%`;
         if (mode) mode.textContent = z.mode || "--";
         if (node) node.textContent = "soil01";
         if (age) age.textContent = formatAge(Number(z.moistureAgeSeconds));
