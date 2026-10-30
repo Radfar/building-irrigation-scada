@@ -25,7 +25,7 @@ let deviceStatus = null;
 const pendingCommands = new Map();
 
 // Save a validated reading to the existing PostgreSQL historian.
-async function saveZone4Reading(moisture, timestamp) {
+/*async function saveZone4Reading(moisture, timestamp) {
     const result = await pool.query(
         `INSERT INTO tag_values (tag_id, value, quality, timestamp)
          SELECT id, $1, $2, $3
@@ -45,7 +45,40 @@ async function saveZone4Reading(moisture, timestamp) {
         `Zone 4 saved to PostgreSQL: ${moisture}% ` +
         `(history row ID: ${result.rows[0].id})`
     );
+}*/
+async function saveZone4Reading(moisture, timestamp) {
+    if (!Number.isFinite(moisture)) {
+        throw new Error("Invalid Zone 04 moisture value");
+    }
+
+    const readingTimestamp = new Date(timestamp);
+
+    if (Number.isNaN(readingTimestamp.getTime())) {
+        throw new Error("Invalid Zone 04 timestamp");
+    }
+
+    const result = await pool.query(
+        `INSERT INTO tag_values (tag_id, value, quality, timestamp)
+         SELECT id, $1, $2, $3
+         FROM tags
+         WHERE tag_name = $4
+         RETURNING id, tag_id`,
+        [moisture, "GOOD", readingTimestamp, TAG_NAME]
+    );
+
+    if (result.rowCount === 0) {
+        throw new Error(
+            `Database tag "${TAG_NAME}" was not found in the tags table`
+        );
+    }
+
+    console.log(
+        `Zone 4 saved to PostgreSQL: ${moisture}% ` +
+        `(history row ID: ${result.rows[0].id})`
+    );
 }
+
+
 
 function startMqtt() {
     if (client) return client;
