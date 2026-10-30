@@ -700,7 +700,25 @@ async function updateZone4() {
    ZONE 04 - OPERATOR COMMANDS (web -> Node.js -> MQTT -> ESP8266)
 ================================================================ */
 
+let zone4ModeCommandPending = false;
+
 async function zone4Command(command) {
+    const isModeCommand = command === "auto" || command === "manual";
+    const modeButton = document.getElementById("z4-btn-mode");
+
+    // Prevent duplicate AUTO/MANUAL requests while waiting for the ESP acknowledgement.
+    if (isModeCommand && zone4ModeCommandPending) {
+        return;
+    }
+
+    if (isModeCommand) {
+        zone4ModeCommandPending = true;
+        if (modeButton) {
+            modeButton.disabled = true;
+            modeButton.textContent = "SENDING...";
+        }
+    }
+
     try {
         const response = await fetch(`${API_BASE}/api/zone4/command`, {
             method: "POST",
@@ -720,8 +738,12 @@ async function zone4Command(command) {
     catch (error) {
         showOperatorMessage("Zone 04 command failed: backend not reachable", "error");
     }
-
-    updateZone4();
+    finally {
+        if (isModeCommand) {
+            zone4ModeCommandPending = false;
+        }
+        updateZone4();
+    }
 }
 function zone4ToggleMode() {
     const mode = document.getElementById("z4-btn-mode")?.textContent;
@@ -746,8 +768,10 @@ function updateZone4Buttons(z) {
     }
 
     if (mode) {
-        mode.disabled = !z || !z.mqttBrokerConnected;
-        mode.textContent = !z ? "--" : z.mode;
+        mode.disabled = zone4ModeCommandPending || !z || !z.mqttBrokerConnected;
+        mode.textContent = zone4ModeCommandPending
+            ? "SENDING..."
+            : !z ? "--" : z.mode;
     }
 
     if (reset) {
