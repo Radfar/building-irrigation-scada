@@ -13,6 +13,7 @@ const {
     publishZone4Mode
 } = require("./mqtt");
 const zone04 = require("./zone04");
+const { startBrokerDiscovery, stopBrokerDiscovery } = require("./mqtt-discovery");
 
 const app = express();
 const PORT = 3000;
@@ -418,6 +419,7 @@ app.get("/api/tags/:tagName/value", async (req, res) => {
  */
 startOpcua().catch(err => console.error("OPC UA start failed:", err.message));
 startMqtt();
+startBrokerDiscovery();
 
 app.listen(PORT, async () => {
 
@@ -433,7 +435,8 @@ app.listen(PORT, async () => {
 process.on("SIGINT", async () => {
     await Promise.all([
         stopOpcua(),
-        stopMqtt()
+        stopMqtt(),
+        stopBrokerDiscovery()
     ]);
 
     process.exit(0);
