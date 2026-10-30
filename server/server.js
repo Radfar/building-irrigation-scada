@@ -9,7 +9,8 @@ const {
 const {
     startMqtt,
     stopMqtt,
-    getZone4Live
+    getZone4Live,
+    publishZone4Mode
 } = require("./mqtt");
 const zone04 = require("./zone04");
 
@@ -55,10 +56,42 @@ app.get("/api/zone4/state", (req, res) => {
     res.json(zone04.getState(getZone4Live()));
 });
 
-app.post("/api/zone4/command", (req, res) => {
+app.post("/api/zone4/command", async (req, res) => {
     try {
-        const result = zone04.command(req.body.command, getZone4Live());
-        res.json({ ok: true, state: result });
+        const command = String(req.body.command || "").toLowerCase();
+        const mqttLive = getZone4Live();
+
+        // Mode changes are sent to the ESP8266 and are accepted only
+        // after its command_result acknowledgement returns over MQTT.
+        if (command === "auto" || command === "manual") {
+            const requestedMode = command === "auto" ? "AUTO" : "MANUAL";
+            const acknowledgement = await publishZone4Mode(requestedMode);
+
+            if (acknowledgement.accepted !== true) {
+                const error = new Error(
+                    acknowledgement.message || "ESP8266 rejected the mode command"
+                );
+                error.status = 409;
+                throw error;
+            }
+
+            const state = zone04.command(command, {
+                ...getZone4Live(),
+                deviceMode: acknowledgement.mode
+            });
+
+            return res.json({
+                ok: true,
+                acknowledged: true,
+                commandId: acknowledgement.command_id,
+                deviceMode: acknowledgement.mode,
+                state
+            });
+        }
+
+        // START/STOP/RESET remain local process simulation commands.
+        const result = zone04.command(command, mqttLive);
+        return res.json({ ok: true, simulated: true, state: result });
     } catch (err) {
         res.status(err.status || 500).json({
             ok: false,
