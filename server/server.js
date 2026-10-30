@@ -11,6 +11,7 @@ const {
     stopMqtt,
     getZone4Live
 } = require("./mqtt");
+const zone04 = require("./zone04");
 
 const app = express();
 const PORT = 3000;
@@ -48,6 +49,23 @@ app.post('/api/zone02/command', async (req, res) => {
   }
 });
 
+
+// Zone 04 — supervisory process state (real moisture + simulated process)
+app.get("/api/zone4/state", (req, res) => {
+    res.json(zone04.getState(getZone4Live()));
+});
+
+app.post("/api/zone4/command", (req, res) => {
+    try {
+        const result = zone04.command(req.body.command, getZone4Live());
+        res.json({ ok: true, state: result });
+    } catch (err) {
+        res.status(err.status || 500).json({
+            ok: false,
+            error: err.status ? err.message : "Internal error"
+        });
+    }
+});
 
 // Zone 04 — latest reading received directly from MQTT
 app.get("/api/zone4/live", (req, res) => {
