@@ -33,20 +33,33 @@ function getState(mqttLive) {
         mqttLive?.quality === "GOOD" &&
         moistureValid;
 
+    const activeMode =
+        ["AUTO", "MANUAL"].includes(mqttLive?.deviceMode)
+            ? mqttLive.deviceMode
+            : state.mode;
+
+    if (activeMode !== state.mode) {
+        state.mode = activeMode;
+        if (activeMode === "AUTO") state.manualStartRequest = false;
+    }
+
     const permissive = commOk && !state.fault;
     const autoDemand =
-        state.mode === "AUTO" &&
+        activeMode === "AUTO" &&
         moistureValid &&
         moisture < AUTO_MOISTURE_LOW_SP;
 
     const wateringActive =
         permissive &&
         !state.stopInhibit &&
-        (state.mode === "AUTO" ? autoDemand : state.manualStartRequest);
+        (activeMode === "AUTO" ? autoDemand : state.manualStartRequest);
 
     return {
         zone: 4,
-        mode: state.mode,
+        mode: activeMode,
+        deviceMode: mqttLive?.deviceMode ?? null,
+        deviceOnline: mqttLive?.deviceOnline ?? null,
+        mqttBrokerConnected: mqttLive?.brokerConnected === true,
         moisture: moistureValid ? moisture : null,
         moistureSource: "mqtt",
         moistureQuality: mqttLive?.quality ?? null,
@@ -69,7 +82,7 @@ function getState(mqttLive) {
                 ? "NO DATA"
                 : wateringActive
                     ? "RUNNING"
-                    : state.mode === "AUTO" && moistureValid && !autoDemand
+                    : activeMode === "AUTO" && moistureValid && !autoDemand
                         ? "STANDBY"
                         : "STOPPED",
         lastCommand: state.lastCommand,
