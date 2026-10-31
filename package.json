@@ -4,7 +4,8 @@
   "description": "a working browser-based SCADA/HMI prototype for a large commercial building irrigation system.\r It includes:",
   "main": "index.js",
   "scripts": {
-    "start": "node server/server.js"
+    "start": "node server/server.js",
+    "start:zone05-simulator": "node simulators/bacnet-zone05/device.js"
   },
   "repository": {
     "type": "git",
