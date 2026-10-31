@@ -102,15 +102,25 @@ client.on('whoIs', data => {
 // These handlers follow the same event/response API used by the existing Zone 03 gateway.
 client.on('readProperty', data => {
   const { objectId, property } = data.payload;
-  const obj = objectFor(objectId);
-  const value = obj?.[property.id];
 
+  // Diagnostic: confirms that node-bacnet dispatched the confirmed service to this handler.
+  console.log(
+    `[Zone05 DEBUG] ReadProperty received: objectType=${objectId.type}, instance=${objectId.instance}, propertyId=${property.id}, invokeId=${data.invokeId}, sender=${data.header.sender.address}`
+  );
+
+  const obj = objectFor(objectId);
   if (!obj) {
+    console.warn('[Zone05 BACnet] Unknown object:', objectId);
     return sendError(data, Bacnet.enum.ConfirmedServiceChoice.READ_PROPERTY, Bacnet.enum.ErrorClass.OBJECT, Bacnet.enum.ErrorCode.UNKNOWN_OBJECT);
   }
-  if (!value) {
+
+  if (!Object.prototype.hasOwnProperty.call(obj, property.id)) {
+    console.warn('[Zone05 BACnet] Unknown property:', property.id, 'for object:', objectId);
     return sendError(data, Bacnet.enum.ConfirmedServiceChoice.READ_PROPERTY, Bacnet.enum.ErrorClass.PROPERTY, Bacnet.enum.ErrorCode.UNKNOWN_PROPERTY);
   }
+
+  const value = obj[property.id];
+  console.log(`[Zone05 DEBUG] ReadProperty response: objectType=${objectId.type}, instance=${objectId.instance}, propertyId=${property.id}, values=${value.length}`);
   client.readPropertyResponse(data.header.sender, data.invokeId, objectId, property, value);
 });
 
