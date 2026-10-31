@@ -47,6 +47,23 @@ The simulator is an independent process. It does not connect to Zone 03, OPC UA,
 
 Binary Output objects implement a 16-slot Priority_Array and Relinquish_Default. Only Present_Value is writable. Monitoring objects are read-only and reject WriteProperty with WRITE_ACCESS_DENIED.
 
+## SCADA tag mapping
+
+| SCADA tag | BACnet object | Instance | Access | Canonical unit |
+|---|---|---:|---|---|
+| `Z05_MOISTURE` | Analog Input | 1 | Read | % |
+| `Z05_FLOW` | Analog Input | 2 | Read | gpm |
+| `Z05_VALVE` | Analog Input | 3 | Read | % |
+| `Z05_TANK_LEVEL` | Analog Input | 4 | Read | % |
+| `Z05_RUNNING` | Binary Input | 1 | Read | Boolean |
+| `Z05_FAULT` | Binary Input | 2 | Read | Boolean |
+| `Z05_AUTO` | Binary Output | 1 | Command/readback | Boolean |
+| `Z05_START` | Binary Output | 2 | Momentary command | Boolean |
+| `Z05_STOP` | Binary Output | 3 | Momentary command | Boolean |
+| `Z05_FAULT_RESET` | Binary Output | 4 | Momentary command | Boolean |
+
+The SCADA driver will normalize these object values into the existing project observation shape. Boolean historian values are stored numerically as 0/1.
+
 ## Process model
 
 - Initial moisture: 56%; it falls slowly when irrigation is off.
