@@ -93,6 +93,16 @@ function sendError(data, service, errorClass, errorCode) {
   client.errorResponse(data.header.sender, service, data.invokeId, errorClass, errorCode);
 }
 
+// Capture requests that node-bacnet decodes but cannot route to a registered service listener.
+client.on('unhandledEvent', data => {
+  console.error('[Zone05 DEBUG] Unhandled BACnet service:', {
+    service: data.service,
+    invokeId: data.invokeId,
+    sender: data.header?.sender?.address,
+    payload: data.payload,
+  });
+});
+
 client.on('whoIs', data => {
   client.iAmResponse(data.header.sender, DEVICE_INSTANCE, Bacnet.enum.Segmentation.NO_SEGMENTATION, VENDOR_ID);
   console.log('[Zone05 BACnet] I-Am sent to', data.header.sender.address);
@@ -198,6 +208,12 @@ const timer = setInterval(syncObjects, TICK_MS);
 
 console.log(`[Zone05 BACnet] Device ${DEVICE_INSTANCE} listening on ${BACNET_INTERFACE}:${BACNET_PORT}/UDP`);
 console.log('[Zone05 BACnet] Independent process simulation started');
+console.log('[Zone05 DEBUG] Listener counts:', {
+  whoIs: client.listenerCount('whoIs'),
+  readProperty: client.listenerCount('readProperty'),
+  writeProperty: client.listenerCount('writeProperty'),
+  unhandledEvent: client.listenerCount('unhandledEvent'),
+});
 
 function shutdown() {
   clearInterval(timer);
