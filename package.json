@@ -25,6 +25,7 @@
     "mqtt": "^5.16.1",
     "node-opcua-client": "^2.186.0",
     "pg": "^8.23.0",
-    "st-ethernet-ip": "^2.7.5"
+    "st-ethernet-ip": "^2.7.5",
+    "node-bacnet": "^0.2.4"
   }
 }
