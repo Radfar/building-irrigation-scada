@@ -1,5 +1,6 @@
 const { startOpcua, stopOpcua, sendCommand, zone3, live } = require("./opcua");
 const zone02 = require('./drivers/micro800/zone02');
+const zone05 = require('./drivers/bacnet/zone05');
 const express = require("express");
 const cors = require("cors");
 const {
@@ -20,6 +21,7 @@ const PORT = 3000;
 //const staleSeconds = Number(process.env.ZONE4_STALE_SECONDS) || 300;
 
 zone02.start();
+zone05.start();
 
 
 /*
@@ -41,6 +43,22 @@ app.post("/api/zone3/command", async (req, res) => {
 });
 
 app.get('/api/zone02', (req, res) => res.json(zone02.getObservations()));
+
+// Zone 05 — BACnet/IP device observations and operator commands
+app.get('/api/zone05', (req, res) => res.json(zone05.getObservations()));
+
+app.post('/api/zone05/command', async (req, res) => {
+  try {
+    const result = await zone05.command(req.body.command);
+    res.json({ ok: true, ...result });
+  } catch (error) {
+    res.status(error.status || 500).json({
+      ok: false,
+      error: error.status ? error.message : 'Internal error'
+    });
+  }
+});
+
 
 app.post('/api/zone02/command', async (req, res) => {
   try {
@@ -436,7 +454,8 @@ process.on("SIGINT", async () => {
     await Promise.all([
         stopOpcua(),
         stopMqtt(),
-        stopBrokerDiscovery()
+        stopBrokerDiscovery(),
+        zone05.stop()
     ]);
 
     process.exit(0);
