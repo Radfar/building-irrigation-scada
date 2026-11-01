@@ -1,4 +1,4 @@
-# Multi-Brand Custom Web SCADA
+# Industrial Water Management — Web SCADA & HMI
 
 A custom browser-based SCADA/HMI for an industrial water-management testbed. The project brings together different controller and edge technologies behind one web monitoring interface.
 
