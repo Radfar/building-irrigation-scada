@@ -135,6 +135,12 @@ async function command(name) {
   if (!action) throw httpError(400, 'Unsupported Zone 05 command');
   try {
     await writeBinaryOutput(action[0], action[1]);
+    // START, STOP and FAULT_RESET are action requests: clear their BO slot
+    // after the write so the same action can be issued again later.
+    if ([2, 3, 4].includes(action[0]) && action[1]) {
+      await new Promise(resolve => setTimeout(resolve, 250));
+      await writeBinaryOutput(action[0], false);
+    }
     return { accepted: true, command: String(name).toLowerCase(), priority: PRIORITY };
   } catch (error) {
     throw httpError(502, `BACnet command write failed: ${error.message}`);
