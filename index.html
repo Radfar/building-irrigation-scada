@@ -2035,62 +2035,34 @@
 
 
 
-                        <!-- ZONE 05 -->
+                        <!-- ZONE 05 — BACnet/IP -->
 
                         <div class="zone">
 
                             <div class="zone-head">
-
-                                <span class="zone-name">
-                                    Zone 05 • West Garden
-                                </span>
-
-                                <span class="status ok">
-                                    STANDBY
-                                </span>
-
+                                <span class="zone-name">Zone 05 • West Garden</span>
+                                <span id="z5-status" class="status warn">CONNECTING</span>
                             </div>
-
 
                             <div class="zone-data">
-
-                                <div class="metric">
-                                    Moisture
-                                    <strong>56%</strong>
-                                </div>
-
-                                <div class="metric">
-                                    Flow
-                                    <strong>0 L/min</strong>
-                                </div>
-
-                                <div class="metric">
-                                    Valve
-                                    <strong>0%</strong>
-                                </div>
-
+                                <div class="metric">Moisture <strong id="z5-moisture">--</strong></div>
+                                <div class="metric">Flow <strong id="z5-flow">--</strong></div>
+                                <div class="metric">Valve <strong id="z5-valve">--</strong></div>
                             </div>
 
+                            <div class="bar"><span id="z5-bar" style="width:0%"></span></div>
 
-                            <div class="bar">
-                                <span style="width:56%"></span>
+                            <div class="zone-data">
+                                <div class="metric">Tank <strong id="z5-tank">--</strong></div>
+                                <div class="metric">Pump <strong id="z5-pump">--</strong></div>
+                                <div class="metric">Mode <strong id="z5-mode">--</strong></div>
                             </div>
-
 
                             <div class="controls">
-
-                                <button>
-                                    Start
-                                </button>
-
-                                <button>
-                                    Manual
-                                </button>
-
-                                <button>
-                                    Details
-                                </button>
-
+                                <button id="z5-btn-start" onclick="zone5Command('start')" disabled>Start</button>
+                                <button id="z5-btn-stop" onclick="zone5Command('stop')" disabled>Stop</button>
+                                <button id="z5-btn-mode" onclick="zone5ToggleMode()" disabled>--</button>
+                                <button id="z5-btn-reset" onclick="zone5Command('faultreset')" style="display:none">Reset</button>
                             </div>
 
                         </div>
@@ -2796,6 +2768,7 @@
 
 <script src="js/tags.js"></script>
 <script src="js/zone02.js"></script>
+<script src="js/zone05.js"></script>
 </body>
 
 </html>
