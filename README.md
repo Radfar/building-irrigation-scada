@@ -2,11 +2,12 @@
 
 A custom browser-based SCADA/HMI for an industrial water-management testbed. The project brings together different controller and edge technologies behind one web monitoring interface.
 
-The current implementation demonstrates three different zone integrations:
+The current implementation demonstrates four zone integrations:
 
 - **Zone 02 — Rockwell Micro850:** EtherNet/IP communication using a Node.js driver based on `st-ethernet-ip`.
 - **Zone 03 — CODESYS:** OPC UA communication with a CODESYS Control Win runtime.
 - **Zone 04 — IoT Edge:** ESP8266 telemetry and bidirectional mode commands over MQTT.
+- **Zone 05 — BACnet/IP:** an independent irrigation-device simulator accessed by a dedicated Node.js BACnet client driver.
 
 The web application uses **HTML, CSS and vanilla JavaScript** on the frontend, **Node.js and Express** on the backend, and **PostgreSQL** for equipment, tag configuration and historical readings.
 
@@ -20,12 +21,14 @@ flowchart TB
     Z2["Zone 02<br/>Rockwell Micro850"]
     Z3["Zone 03<br/>CODESYS Control Win"]
     Z4["Zone 04<br/>ESP8266 soil node"]
+    Z5["Zone 05<br/>BACnet/IP device simulator"]
   end
 
   subgraph COMM["Communication layer"]
     EIP["EtherNet/IP"]
     OPC["OPC UA"]
     MQTT["MQTT / Mosquitto"]
+    BAC["BACnet/IP over UDP"]
   end
 
   subgraph APP["Custom Web SCADA"]
@@ -37,9 +40,11 @@ flowchart TB
   Z2 <-->|"EtherNet/IP"| EIP
   Z3 <-->|"OPC UA"| OPC
   Z4 <-->|"MQTT telemetry, status and commands"| MQTT
+  Z5 <-->|"BACnet/IP"| BAC
   EIP <--> BE
   OPC <--> BE
   MQTT <--> BE
+  BAC <--> BE
   BE <--> FE
   BE <--> DB
 ```
@@ -53,6 +58,7 @@ The backend acts as the integration layer between the controller-specific protoc
 | Zone 02 | Rockwell Micro850 | EtherNet/IP | Live tag polling and whitelisted Boolean commands through the Node.js driver |
 | Zone 03 | CODESYS Control Win | OPC UA | Live tag browsing and polling, operator commands and PLC-side process logic |
 | Zone 04 | ESP8266 | MQTT | Soil-moisture telemetry, device status, AUTO/MANUAL commands and acknowledgements |
+| Zone 05 | Simulated BACnet/IP device | BACnet/IP over UDP | Analog and binary process values, commandable Binary Outputs and process simulation |
 | SCADA | Custom Web HMI | REST API | Unified monitoring, zone cards, operator controls and communication status |
 
 The project also contains local process simulations. In particular, Zone 04 moisture telemetry is received from the ESP8266, while its valve command and flow indication remain simulated. The ESP8266 firmware's onboard LED indicates the selected firmware mode; it is not physical valve feedback.
@@ -67,6 +73,7 @@ The project also contains local process simulations. In particular, Zone 04 mois
 | Zone 02 protocol | EtherNet/IP |
 | Zone 03 protocol | OPC UA |
 | Zone 04 protocol | MQTT |
+| Zone 05 protocol | BACnet/IP |
 | MQTT broker | Mosquitto |
 | Edge device | ESP8266 / Wemos D1 |
 | PLC environments | Rockwell CCW / Micro800 and CODESYS |
@@ -83,6 +90,7 @@ The project also contains local process simulations. In particular, Zone 04 mois
 - PostgreSQL historian insertion for valid Zone 04 moisture readings.
 - Live data freshness handling, including `GOOD` and `UNCERTAIN` quality states.
 - REST endpoints that separate the browser HMI from industrial protocol details.
+- Zone 05 BACnet/IP polling, normalized observations and whitelisted AUTO/MANUAL/START/STOP/FAULT_RESET commands.
 
 ## Zone 02 — Rockwell Micro850
 
@@ -154,6 +162,24 @@ The SCADA backend listens for UDP discovery requests on port 1884 and advertises
 
 Discovery is limited to a shared broadcast-enabled IPv4 subnet. It does not cross routers or VLAN boundaries.
 
+## Zone 05 — BACnet/IP
+
+Zone 05 uses an independently runnable BACnet/IP device simulator in [`Radfar/bacnet-device-simulator`](https://github.com/Radfar/bacnet-device-simulator). The SCADA backend acts as the BACnet client; the simulator does not depend on the SCADA database or HMI.
+
+The driver is `server/drivers/bacnet/zone05.js`. It polls four Analog Inputs, two Binary Inputs and the AUTO-mode Binary Output, then exposes normalized observations through the SCADA API. Operator commands are restricted to AUTO, MANUAL, START, STOP and FAULT_RESET. START, STOP and FAULT_RESET are momentary requests: the driver writes ACTIVE at priority 8, then relinquishes the command slot so the request can be issued again. AUTO/MANUAL is a held command.
+
+Default simulator endpoint: `192.168.186.224:47809/UDP`. Override it with `ZONE05_BACNET_IP` and `ZONE05_BACNET_PORT` when the simulator host changes. The simulator listens on UDP 47809 to avoid the local UDP 47808 service used by another BACnet component in this testbed.
+
+The simulator exposes:
+
+| BACnet object | Instances | Purpose |
+|---|---:|---|
+| Analog Input | 1–4 | Moisture, flow, valve position and tank level |
+| Binary Input | 1–2 | Pump running and fault status |
+| Binary Output | 1–4 | AUTO/MANUAL, START, STOP and FAULT RESET |
+
+See the simulator README and its [learning journal](https://github.com/Radfar/bacnet-device-simulator/blob/main/docs/learning-journal.md) for the object map, process model, YABE commissioning notes and validation history.
+
 ## REST API
 
 | Method | Endpoint | Purpose |
@@ -171,6 +197,8 @@ Discovery is limited to a shared broadcast-enabled IPv4 subnet. It does not cros
 | GET | `/api/zone4` | Latest stored Zone 04 moisture reading |
 | GET | `/api/zone4/state` | Zone 04 supervisory process state |
 | POST | `/api/zone4/command` | Zone 04 mode command or local simulation command |
+| GET | `/api/zone05` | Zone 05 normalized BACnet observations |
+| POST | `/api/zone05/command` | Zone 05 whitelisted BACnet command |
 
 ## Repository structure
 
@@ -202,6 +230,7 @@ node-red/                    Node-RED flow assets retained in the repository
 - CODESYS Control Win runtime with OPC UA enabled
 - Rockwell Micro850 accessible over EtherNet/IP for Zone 02
 - ESP8266 firmware and Wi-Fi configuration for Zone 04
+- BACnet/IP simulator host reachable over UDP 47809 for Zone 05
 
 ### 1. Install dependencies
 
@@ -224,6 +253,11 @@ Set the relevant environment variables before starting the service:
 | `MQTT_PORT` | `1883` | Broker port advertised by discovery |
 | `MQTT_DISCOVERY_PORT` | `1884` | UDP discovery listener |
 | `ZONE4_STALE_SECONDS` | `300` | Zone 04 live-data freshness threshold |
+| `ZONE05_BACNET_IP` | `192.168.186.224` | Zone 05 BACnet simulator IP address |
+| `ZONE05_BACNET_PORT` | `47809` | Zone 05 BACnet/IP UDP port |
+| `ZONE05_BACNET_DEVICE_INSTANCE` | `10005` | Zone 05 BACnet Device instance |
+| `ZONE05_BACNET_CLIENT_PORT` | `47810` | Local UDP port used by the SCADA BACnet client |
+| `ZONE05_BACNET_POLL_MS` | `1000` | Zone 05 polling interval |
 
 The CODESYS endpoint is currently defined in `server/opcua.js` as `opc.tcp://127.0.0.1:4840`.
 
@@ -233,7 +267,7 @@ The CODESYS endpoint is currently defined in `server/opcua.js` as `opc.tcp://127
 npm start
 ```
 
-The Express API listens on port 3000. The backend starts the Zone 02 driver, OPC UA client, MQTT client and UDP broker-discovery responder.
+The Express API listens on port 3000. The backend starts the Zone 02 driver, OPC UA client, MQTT client, UDP broker-discovery responder and Zone 05 BACnet/IP client.
 
 ### 5. Open the HMI
 
@@ -259,6 +293,10 @@ This repository is a development and simulation testbed. Review these limitation
 - [Wireless Irrigation Edge](https://github.com/Radfar/wireless-irrigation-edge) — ESP8266 firmware, RF irrigation controller and edge-device assets.
 - [Water Process Integration Testbed](https://github.com/Radfar/water-process-integration-testbed) — broader testbed architecture.
 - [OPC UA BACnet Gateway](https://github.com/Radfar/opcua-bacnet-gateway) — separate protocol gateway project.
+
+## Learning journal and engineering documentation
+
+The [`docs/learning-journal.md`](docs/learning-journal.md) is a maintained engineering notebook covering the system architecture, protocol integration decisions, normalized observation model, commissioning and regression testing, troubleshooting, known limitations and next experiments. It is written as a reusable learning resource as well as a project record.
 
 ## License
 
