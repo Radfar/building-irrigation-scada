@@ -80,3 +80,28 @@ The process model is deliberately separated from the BACnet object database so i
 ## Validation note
 
 This simulator uses `node-bacnet` server-side `whoIs`, `readProperty`, and `writeProperty` events. The library documents server-side request handling as beta; the implementation follows the request/response pattern already used by the Zone 03 gateway in this portfolio. Validate the exact installed-library behavior with a separate BACnet client before integrating the Zone 05 client driver.
+
+
+## Web SCADA BACnet client integration
+
+The Web SCADA backend includes a separate BACnet/IP client driver at
+`server/drivers/bacnet/zone05.js`. It polls the simulator and exposes:
+
+- `GET http://localhost:3000/api/zone05` — normalized observations
+- `POST http://localhost:3000/api/zone05/command` — AUTO, MANUAL, START, STOP and FAULT_RESET
+
+The driver defaults to the Ubuntu simulator address used in the development testbed:
+
+| Variable | Default |
+|---|---:|
+| `ZONE05_BACNET_IP` | `192.168.186.224` |
+| `ZONE05_BACNET_PORT` | `47809` |
+| `ZONE05_BACNET_DEVICE_INSTANCE` | `10005` |
+| `ZONE05_BACNET_CLIENT_PORT` | `47810` |
+| `ZONE05_BACNET_POLL_MS` | `1000` |
+
+Override these in the Web SCADA process environment if the Ubuntu VM receives a different IP address. The simulator and SCADA backend must be able to exchange UDP traffic on port 47809.
+
+Start the simulator first, then start the Web SCADA backend with `npm start`.
+The Zone 05 HMI card displays live process values and sends commands through
+the backend; the simulator remains an independent process.
