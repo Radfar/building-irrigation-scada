@@ -1,7 +1,7 @@
 {
   "name": "building-irrigation-scada",
   "version": "1.0.0",
-  "description": "a working browser-based SCADA/HMI prototype for a large commercial building irrigation system.\r It includes:",
+  "description": "Browser-based multi-protocol Web SCADA/HMI testbed integrating Rockwell Micro850, CODESYS, MQTT IoT edge devices and BACnet/IP with Node.js, Express and PostgreSQL.",
   "main": "index.js",
   "scripts": {
     "start": "node server/server.js",
@@ -11,7 +11,24 @@
     "type": "git",
     "url": "git+https://github.com/Radfar/building-irrigation-scada.git"
   },
-  "keywords": [],
+  "keywords": [
+    "web-scada",
+    "scada",
+    "hmi",
+    "industrial-automation",
+    "building-automation",
+    "it-ot",
+    "nodejs",
+    "express",
+    "postgresql",
+    "ethernet-ip",
+    "opc-ua",
+    "mqtt",
+    "bacnet-ip",
+    "rockwell",
+    "codesys",
+    "iot"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
