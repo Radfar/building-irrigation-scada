@@ -87,7 +87,7 @@ The project also contains local process simulations. In particular, Zone 04 mois
 - Zone 04 MQTT telemetry ingestion directly by the Node.js backend.
 - MQTT device status and command-result acknowledgement handling.
 - UDP broker discovery for the Zone 04 ESP8266 on a shared IPv4 subnet.
-- PostgreSQL historian insertion for valid Zone 04 moisture readings.
+- Shared PostgreSQL historian persistence for selected observations from Zones 02–05.
 - Live data freshness handling, including `GOOD` and `UNCERTAIN` quality states.
 - REST endpoints that separate the browser HMI from industrial protocol details.
 - Zone 05 BACnet/IP polling, normalized observations and whitelisted AUTO/MANUAL/START/STOP/FAULT_RESET commands.
@@ -180,6 +180,37 @@ The simulator exposes:
 
 See the simulator README and its [learning journal](https://github.com/Radfar/bacnet-device-simulator/blob/main/docs/learning-journal.md) for the object map, process model, YABE commissioning notes and validation history.
 
+## Shared PostgreSQL historian
+
+The four zone integrations use a common historian writer and the existing PostgreSQL `tags` and `tag_values` tables. Protocol-specific drivers retain responsibility for acquisition; the shared service applies a consistent persistence contract and writes accepted observations to the same history table.
+
+### Historian coverage
+
+| Zone | Source | Persisted tags | Acquisition / storage behavior |
+|---|---|---|---|
+| Zone 02 | Micro850 / EtherNet/IP | All 17 tags in the driver registry | Polled; sampled at the configured historian interval |
+| Zone 03 | CODESYS / OPC UA | `Z03_MOISTURE`, `Z03_FLOW`, `Z03_VALVE`, `Z03_FAULT`, `Z03_AUTO` | Selected allow-listed variables; sampled at the configured interval |
+| Zone 04 | ESP8266 / MQTT | `Z04_MOISTURE` | Event-driven; a validated moisture message is stored when received |
+| Zone 05 | BACnet/IP | Seven observations exposed by the BACnet driver | Polled; sampled at the configured historian interval |
+
+The default sampling interval for Zones 02, 03 and 05 is five seconds. Set `HISTORIAN_SAMPLE_INTERVAL_MS` to change it. Zone 04 remains event-driven and is not throttled by that interval.
+
+The historian accepts only observations with `GOOD` quality and finite numeric or Boolean values. Boolean values are stored as `1` or `0` in the PostgreSQL `NUMERIC` value column. Source timestamps are preferred; received timestamps are used when the source does not provide one. A stale or disconnected source does not create repeated NULL history rows.
+
+Zone 04 flow and valve indications are simulated process values, not physical measurements, and are therefore excluded from historian persistence. The historian uses the project's existing tables and does not create or modify Ignition `sqlth_*` tables.
+
+### Database migration and verification
+
+After backing up the SCADA database, apply the registry migration once:
+
+```bash
+psql -h <DB_HOST> -p <DB_PORT> -U <DB_USER> -d <DB_NAME> -f database/migrations/2026-11-02_common_historian_registry.sql
+```
+
+The migration is designed to be safe to rerun. It registers Zone 02 and Zone 05 tags, corrects Zone 05 equipment ownership, and aligns Zone 02/05 flow units with the driver contract (`gpm`). Zone 03 flow remains in `L/min`.
+
+For the complete coverage list, SQL verification query and implementation notes, see [docs/HISTORIAN.md](docs/HISTORIAN.md).
+
 ## REST API
 
 | Method | Endpoint | Purpose |
@@ -240,7 +271,7 @@ npm install
 
 ### 2. Configure PostgreSQL
 
-Create the `building_irrigation` database and apply the SQL schema in `database/schema.sql`. Configure the database connection using the environment variables read by `server/database.js`.
+Create the `building_irrigation` database and apply the SQL schema in `database/schema.sql`. Configure the database connection using the environment variables read by `server/database.js`. Back up the database, then apply the historian registry migration: `database/migrations/2026-11-02_common_historian_registry.sql`.
 
 ### 3. Configure PLC and MQTT connections
 
@@ -253,6 +284,7 @@ Set the relevant environment variables before starting the service:
 | `MQTT_PORT` | `1883` | Broker port advertised by discovery |
 | `MQTT_DISCOVERY_PORT` | `1884` | UDP discovery listener |
 | `ZONE4_STALE_SECONDS` | `300` | Zone 04 live-data freshness threshold |
+| `HISTORIAN_SAMPLE_INTERVAL_MS` | `5000` | Maximum persistence rate per source for polled Zones 02, 03 and 05 |
 | `ZONE05_BACNET_IP` | unset | Optional unicast Who-Is target if subnet broadcasts are filtered |
 | `ZONE05_BACNET_PORT` | `47809` | Zone 05 BACnet/IP UDP port |
 | `ZONE05_BACNET_DEVICE_INSTANCE` | `10005` | Zone 05 BACnet Device instance |
