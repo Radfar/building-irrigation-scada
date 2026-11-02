@@ -1557,6 +1557,50 @@
 
         }
 
+
+        /* HMI UI update: themes, selectable cards and zone detail panel */
+        :root { color-scheme:dark; --surface-raised:#1b2b43; --surface-soft:#0d192a; --header-bg:rgba(10,20,35,.96); }
+        body[data-theme="light"] {
+            color-scheme:light; --bg:#edf2f7; --panel:#fff; --panel-2:#f4f7fb; --panel-3:#e8eef5;
+            --border:#d4deea; --border-light:#c2cfdd; --text:#172b45; --muted:#60738b;
+            --surface-raised:#fff; --surface-soft:#eaf0f6; --header-bg:rgba(255,255,255,.97);
+            background:radial-gradient(circle at top right,#e1edf8 0,var(--bg) 42%);
+        }
+        body[data-theme="light"] header, body[data-theme="light"] aside { background:var(--header-bg); }
+        body[data-theme="light"] .nav { color:var(--muted); }
+        body[data-theme="light"] .nav:hover, body[data-theme="light"] .nav.active { background:#e2edf8;color:#17446d;border-color:#b8cde1; }
+        body[data-theme="light"] button { background:#edf3f8;color:var(--text); }
+        body[data-theme="light"] button:hover { background:#dce8f3; }
+        body[data-theme="light"] .primary { background:#d9f2e7;border-color:#91cbb1;color:#14583e; }
+        body[data-theme="light"] .card, body[data-theme="light"] .zone, body[data-theme="light"] .status-block, body[data-theme="light"] .valve { background:var(--surface-raised); }
+        body[data-theme="light"] .system { background:#e8eff6; }
+        body[data-theme="light"] .node { background:#fff;border-color:#c4d2e0; }
+        body[data-theme="light"] .bar { background:#dce5ee; }
+        body[data-theme="light"] .alarm-row, body[data-theme="light"] .permissive { border-color:var(--border); }
+        body[data-theme="light"] .faceplate { background:linear-gradient(150deg,#fff,#f1f5f9);border-color:var(--border); }
+        body[data-theme="light"] .faceplate-overlay { background:rgba(20,35,55,.25); }
+        body[data-theme="light"] .faceplate-footer, body[data-theme="light"] footer { color:var(--muted); }
+        body[data-theme="light"] .close-button:hover { background:#e6edf5;color:#172b45; }
+        .theme-toggle { display:inline-flex;align-items:center;gap:7px;padding:8px 11px;font-size:11px;white-space:nowrap; }
+        .zone { min-height:174px;display:flex;flex-direction:column;cursor:pointer;transition:border-color .16s,box-shadow .16s,transform .16s; }
+        .zone:hover { border-color:var(--blue);transform:translateY(-1px); }
+        .zone.is-selected { border-color:var(--cyan);box-shadow:0 0 0 2px rgba(68,215,232,.18),0 8px 24px rgba(0,0,0,.12); }
+        .zone .controls { display:none !important; }
+        .zone .zone-data { min-height:43px; }
+        .zone .bar { margin-top:auto; }
+        .zone:focus-visible { outline:2px solid var(--blue);outline-offset:2px; }
+        .zone-details { margin-bottom:15px; }
+        .zone-details .detail-intro { color:var(--muted);font-size:11px;line-height:1.6;margin:7px 0 13px; }
+        .detail-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px; }
+        .detail-item { background:var(--surface-soft);border:1px solid var(--border);border-radius:7px;padding:10px;min-width:0; }
+        .detail-item span { display:block;color:var(--muted);font-size:10px;margin-bottom:5px; }
+        .detail-item strong { display:block;color:var(--text);font-size:14px;overflow-wrap:anywhere; }
+        .detail-actions { display:flex;flex-wrap:wrap;gap:7px;margin-top:13px; }
+        .detail-actions button { flex:1 1 72px;font-size:10px;padding:8px 9px; }
+        .detail-hint { color:var(--muted);font-size:9px;line-height:1.5;margin-top:10px; }
+        @media(max-width:900px){.detail-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+        @media(max-width:700px){header{padding:0 14px;gap:10px}.top-status{gap:9px}.theme-toggle{padding:7px 8px}.content{padding:15px}}
+
     </style>
 
 </head>
@@ -1591,6 +1635,8 @@
 
     </div>
 
+
+    <button id="theme-toggle" class="theme-toggle" type="button">☀ Light mode</button>
 
     <div class="top-status">
 
@@ -1878,7 +1924,7 @@
 
                         <!-- ZONE 01 -->
 
-                        <div class="zone">
+                        <div class="zone" data-zone="01" role="button" tabindex="0" aria-pressed="false">
 
                             <div class="zone-head">
 
@@ -1939,7 +1985,7 @@
 
 
                         <!-- ZONE 02 (live: Rockwell Micro850) -->
-<div class="zone">
+<div class="zone" data-zone="02" role="button" tabindex="0" aria-pressed="false">
 
     <div class="zone-head">
         <span class="zone-name">Zone 02 • Courtyard</span>
@@ -1964,7 +2010,7 @@
 </div>
 
                         <!-- ZONE 03 -->
-<div class="zone">
+<div class="zone" data-zone="03" role="button" tabindex="0" aria-pressed="false">
 
     <div class="zone-head">
         <span class="zone-name">Zone 03 • Roof Garden</span>
@@ -2000,7 +2046,7 @@
 </div>
 
                         <!-- ZONE 04 -->
-<div class="zone">
+<div class="zone" data-zone="04" role="button" tabindex="0" aria-pressed="false">
 
     <div class="zone-head">
         <span class="zone-name">Zone 04 • East Garden</span>
@@ -2037,7 +2083,7 @@
 
                         <!-- ZONE 05 — BACnet/IP -->
 
-                        <div class="zone">
+                        <div class="zone" data-zone="05" role="button" tabindex="0" aria-pressed="false">
 
                             <div class="zone-head">
                                 <span class="zone-name">Zone 05 • West Garden</span>
@@ -2071,7 +2117,7 @@
 
                         <!-- ZONE 06 -->
 
-                        <div class="zone">
+                        <div class="zone" data-zone="06" role="button" tabindex="0" aria-pressed="false">
 
                             <div class="zone-head">
 
@@ -2207,6 +2253,12 @@
 
             <div>
 
+                <div class="card zone-details" id="zone-details-panel" aria-live="polite">
+                    <div class="section-head"><h3 id="detail-title">Zone 02 • Courtyard</h3><span id="detail-status" class="status warn">NO DATA</span></div>
+                    <p class="detail-intro" id="detail-subtitle">Select a zone card to inspect its controller, protocol and process values.</p>
+                    <div class="detail-grid" id="detail-grid"></div><div class="detail-actions" id="detail-actions"></div>
+                    <div class="detail-hint" id="detail-hint">Selecting a zone only opens its details. It does not issue a process command.</div>
+                </div>
 
                 <!-- =================================================
                      SYSTEM
@@ -2769,6 +2821,7 @@
 <script src="js/tags.js"></script>
 <script src="js/zone02.js"></script>
 <script src="js/zone05.js"></script>
+<script src="js/hmi-ui.js"></script>
 </body>
 
 </html>
