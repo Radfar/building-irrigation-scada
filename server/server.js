@@ -1,3 +1,10 @@
+require('dotenv').config({ override: true });
+/*
+console.log(
+    '[CONFIG] Zone 04 stale timeout:',
+    process.env.ZONE4_STALE_SECONDS,
+    'seconds'
+);*/
 const { startOpcua, stopOpcua, sendCommand, zone3, live } = require("./opcua");
 const zone02 = require('./drivers/micro800/zone02');
 const zone05 = require('./drivers/bacnet/zone05');
