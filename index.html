@@ -1592,6 +1592,10 @@
         .zone:focus-visible { outline:2px solid var(--blue);outline-offset:2px; }
 
         .zone[hidden] { display:none !important; }
+        .zone-identity { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;min-width:0; }
+        .zone-device { color:var(--muted);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+        .protocol-chip { flex:0 0 auto;padding:4px 7px;border:1px solid rgba(88,166,255,.28);border-radius:5px;background:rgba(88,166,255,.10);color:var(--blue);font-size:9px;font-weight:700;letter-spacing:.02em;white-space:nowrap; }
+        body[data-theme="light"] .protocol-chip { background:#e8f2fc;border-color:#c5d9ed;color:#245b8d; }
         .zone-filter { display:flex;align-items:center;gap:8px;flex-wrap:wrap; }
         .zone-filter label { color:var(--muted);font-size:10px; }
         .zone-filter select { min-width:142px;padding:7px 30px 7px 10px;border:1px solid var(--border-light);border-radius:7px;background:var(--panel-2);color:var(--text);font:inherit;font-size:11px; }
@@ -1941,67 +1945,30 @@
                         <div id="zone-filter-empty" class="zone-filter-empty" hidden>No zones match this filter. Select another view to see more zones.</div>
 
 
-                        <!-- ZONE 01 -->
-
+                        <!-- ZONE 01 — Python water process simulator / Modbus TCP -->
                         <div class="zone" data-zone="01" role="button" tabindex="0" aria-pressed="false">
-
                             <div class="zone-head">
-
-                                <span class="zone-name">
-                                    Zone 01 • Main Entrance
-                                </span>
-
-                                <span class="status ok">
-                                    RUNNING
-                                </span>
-
+                                <span class="zone-name">Zone 01 • Main Entrance</span>
+                                <span id="z1-status" class="status warn">CONNECTING</span>
                             </div>
-
-
                             <div class="zone-data">
-
-                                <div class="metric">
-                                    Moisture
-                                    <strong>48%</strong>
-                                </div>
-
-                                <div class="metric">
-                                    Flow
-                                    <strong>21.3 L/min</strong>
-                                </div>
-
-                                <div class="metric">
-                                    Valve
-                                    <strong>100%</strong>
-                                </div>
-
+                                <div class="metric">Tank level<strong id="z1-tank">--</strong></div>
+                                <div class="metric">Flow<strong id="z1-flow">--</strong></div>
+                                <div class="metric">Valve<strong id="z1-valve">--</strong></div>
                             </div>
-
-
-                            <div class="bar">
-                                <span style="width:48%"></span>
+                            <div class="bar"><span id="z1-bar" style="width:0%"></span></div>
+                            <div class="zone-data">
+                                <div class="metric">Pump frequency<strong id="z1-frequency">--</strong></div>
+                                <div class="metric">Pump state<strong id="z1-pump">--</strong></div>
+                                <div class="metric">Mode<strong id="z1-mode">--</strong></div>
                             </div>
-
-
                             <div class="controls">
-
-                                <button onclick="toggle(this)">
-                                    Stop
-                                </button>
-
-                                <button>
-                                    Manual
-                                </button>
-
-                                <button>
-                                    Details
-                                </button>
-
+                                <button id="z1-btn-start" onclick="zone1Command('start')" disabled>Start</button>
+                                <button id="z1-btn-stop" onclick="zone1Command('stop')" disabled>Stop</button>
+                                <button id="z1-btn-mode" onclick="zone1ToggleMode()" disabled>--</button>
+                                <button id="z1-btn-reset" onclick="zone1Command('faultreset')" disabled>Reset</button>
                             </div>
-
                         </div>
-
-
 
                         <!-- ZONE 02 (live: Rockwell Micro850) -->
 <div class="zone" data-zone="02" role="button" tabindex="0" aria-pressed="false">
@@ -2838,6 +2805,8 @@
 ================================================================ -->
 
 <script src="js/tags.js"></script>
+<script src="js/zone01.js"></script>
+<script src="js/zone-protocol-labels.js"></script>
 <script src="js/zone02.js"></script>
 <script src="js/zone05.js"></script>
 <script src="js/hmi-ui.js"></script>
