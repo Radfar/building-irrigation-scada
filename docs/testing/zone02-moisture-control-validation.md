@@ -47,13 +47,13 @@ This validates the integrated simulated test path from Node-RED test-input gener
 
 ## Evidence
 
-Supporting material is stored under `media/testing/zone02/`:
+Supporting material is stored under `docs/media/testing/zone02/`:
 
 - Node-RED flow screenshot
 - Web SCADA screenshot(s)
 - Edited demonstration video
 
-See [media/testing/zone02/README.md](../../media/testing/zone02/README.md) for the evidence filenames and placement guidance.
+See [docs/media/testing/zone02/README.md](../media/testing/zone02/README.md) for the evidence filenames and placement guidance.
 
 ## Scope and limitations
 

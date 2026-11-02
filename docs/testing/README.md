@@ -6,7 +6,7 @@ This directory contains repeatable test procedures and recorded results for the 
 
 - [Zone 02 — moisture-based automatic control validation](zone02-moisture-control-validation.md)
 
-Test documentation describes the test configuration, input conditions, expected behavior, observed results and limitations. Visual evidence is maintained separately under `media/testing/`.
+Test documentation describes the test configuration, input conditions, expected behavior, observed results and limitations. Visual evidence is maintained separately under `../media/testing/`.
 
 ## Evidence conventions
 

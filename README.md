@@ -247,7 +247,10 @@ server/
     micro800/zone02.js       Rockwell Micro850 driver
 database/                    PostgreSQL schema and database assets
 PLC/                         PLC project assets
-docs/                        Implementation notes and documentation
+docs/                        Implementation notes, media and test evidence
+  media/
+    screenshots/             HMI theme screenshots
+    testing/                 Functional test evidence
 node-red/                    Node-RED flow assets retained in the repository
 ```
 
@@ -337,18 +340,17 @@ The [`docs/learning-journal.md`](docs/learning-journal.md) is a maintained engin
 
 MIT. See [LICENSE](LICENSE).
 
-
 ## HMI screenshots and test evidence
 
-The HMI supports both dark and light themes. The screenshots below are reserved for the current interface; add the corresponding image files at these paths:
+The HMI supports both dark and light themes. The screenshots are stored in `docs/media/screenshots/`:
 
 | Theme | Screenshot |
 |---|---|
-| Dark mode | `media/screenshots/hmi-dark-mode.png` |
-| Light mode | `media/screenshots/hmi-light-mode.png` |
+| Dark mode | [hmi-dark-mode.png](docs/media/screenshots/hmi-dark-mode.png) |
+| Light mode | [hmi-light-mode.png](docs/media/screenshots/hmi-light-mode.png) |
 
-![Web SCADA HMI — dark mode](media/screenshots/hmi-dark-mode.png)
+![Web SCADA HMI — dark mode](docs/media/screenshots/hmi-dark-mode.png)
 
-![Web SCADA HMI — light mode](media/screenshots/hmi-light-mode.png)
+![Web SCADA HMI — light mode](docs/media/screenshots/hmi-light-mode.png)
 
-Zone-level functional test procedures and results are documented in [docs/testing](docs/testing/README.md). Supporting screenshots, Node-RED flow captures and edited demonstration videos belong under [media](media/README.md). Large video files may be linked from an external host or attached to a GitHub Release rather than committed directly to the repository.
+Zone-level functional test procedures and results are documented in [docs/testing](docs/testing/README.md). Supporting screenshots, Node-RED flow captures and edited demonstration videos are organized under [docs/media](docs/media/README.md). Large video files may be linked from an external host or attached to a GitHub Release rather than committed directly to the repository.
