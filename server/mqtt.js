@@ -1,6 +1,6 @@
 
 const mqtt = require("mqtt");
-const { pool } = require("./database");
+const { persistObservations } = require("./historian/historian");
 
 const BROKER_URL = process.env.MQTT_URL || "mqtt://localhost:1883";
 const ZONE4_TOPIC =
@@ -30,37 +30,17 @@ const QUALITY_GOOD = "GOOD";
 const QUALITY_UNCERTAIN = "UNCERTAIN";
 
 async function saveZone4Reading(moisture, timestamp) {
-    if (!Number.isFinite(moisture)) {
-        throw new Error("Invalid Zone 04 moisture value");
-    }
-
-    const readingTimestamp = new Date(timestamp);
-
-    if (Number.isNaN(readingTimestamp.getTime())) {
-        throw new Error("Invalid Zone 04 timestamp");
-    }
-
-    const result = await pool.query(
-        `INSERT INTO tag_values (tag_id, value, quality, timestamp)
-         SELECT id, $1, $2, $3
-         FROM tags
-         WHERE tag_name = $4
-         RETURNING id, tag_id`,
-        [moisture, QUALITY_GOOD, readingTimestamp, TAG_NAME]
-    );
-
-    if (result.rowCount === 0) {
-        throw new Error(
-            `Database tag "${TAG_NAME}" was not found in the tags table`
-        );
-    }
-
-    console.log(
-        `Zone 4 saved to PostgreSQL: ${moisture}% ` +
-        `(history row ID: ${result.rows[0].id})`
-    );
+    return persistObservations("zone04-mqtt-soil01", [{
+        tagName: TAG_NAME,
+        value: moisture,
+        engineeringUnit: "%",
+        sourceSystemId: "zone04-mqtt-soil01",
+        protocol: "MQTT",
+        sourceTimestamp: timestamp,
+        receivedTimestamp: timestamp.toISOString(),
+        quality: QUALITY_GOOD
+    }], { force: true });
 }
-
 
 
 function startMqtt() {
