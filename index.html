@@ -1591,6 +1591,7 @@
         .zone .bar { margin-top:auto; }
         .zone:focus-visible { outline:2px solid var(--blue);outline-offset:2px; }
 
+        .zone[hidden] { display:none !important; }
         .zone-filter { display:flex;align-items:center;gap:8px;flex-wrap:wrap; }
         .zone-filter label { color:var(--muted);font-size:10px; }
         .zone-filter select { min-width:142px;padding:7px 30px 7px 10px;border:1px solid var(--border-light);border-radius:7px;background:var(--panel-2);color:var(--text);font:inherit;font-size:11px; }
@@ -1928,7 +1929,7 @@
                                 <option value="all">All zones</option>
                                 <option value="active">Active zones</option>
                                 <option value="standby">Standby zones</option>
-                                <option value="attention">Fault / Offline</option>
+                                <option value="attention">Needs attention</option>
                             </select>
                             <span id="zone-filter-count" class="kpi-label">6 zones</span>
                         </div>
