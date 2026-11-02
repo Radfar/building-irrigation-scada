@@ -308,6 +308,11 @@ Set the relevant environment variables before starting the service:
 
 | Variable | Default | Purpose |
 |---|---|---|
+| `ZONE01_MODBUS_HOST` | `127.0.0.1` | Zone 01 simulator host |
+| `ZONE01_MODBUS_PORT` | `1502` | Zone 01 Modbus TCP port |
+| `ZONE01_MODBUS_UNIT_ID` | `1` | Zone 01 Modbus unit identifier |
+| `ZONE01_MODBUS_POLL_MS` | `1000` | Zone 01 polling interval |
+| `ZONE01_MODBUS_TIMEOUT_MS` | `2000` | Zone 01 request timeout |
 | `ZONE02_PLC_IP` | `192.168.203.1` | Micro850 address |
 | `MQTT_URL` | `mqtt://localhost:1883` | MQTT broker URL |
 | `MQTT_PORT` | `1883` | Broker port advertised by discovery |
