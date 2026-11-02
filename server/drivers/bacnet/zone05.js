@@ -148,10 +148,10 @@ function discover() {
     client.whoIs(`${broadcast}:${DEVICE_PORT}`, DEVICE_ID_FILTER);
   }
 
-  // A fixed IP may be supplied as a commissioning fallback, but discovery is
-  // always attempted first. Never silently poll the old hard-coded address.
+  // Optional unicast Who-Is supports networks where directed broadcasts are
+  // filtered. It is not required for normal same-subnet discovery.
   if (CONFIGURED_IP) {
-    console.log(`[zone05-bacnet] configured fallback IP: ${CONFIGURED_IP}`);
+    client.whoIs(`${CONFIGURED_IP}:${DEVICE_PORT}`, DEVICE_ID_FILTER);
   }
 
   clearTimeout(discoveryTimer);
