@@ -39,14 +39,16 @@ function render(){
  $("detail-grid").innerHTML=vals.map(v=>metric(v[0],v[1])).join("");
  const controls={
  "02":[["Start","z2-btn-start"],["Stop","z2-btn-stop"],["Mode","z2-btn-mode"],["Reset","z2-btn-reset"]],
- "03":[["Start",null,"zone3Command('start')"],["Stop",null,"zone3Command('stop')"],["Mode",null,"zone3ToggleMode()"],["Reset",null,"zone3Command('faultReset')"]],
- "04":[["Start",null,"zone4Command('start')"],["Stop",null,"zone4Command('stop')"],["Mode",null,"zone4ToggleMode()"],["Reset",null,"zone4Command('faultReset')"]],
+ "03":[["Start","z3-btn-start"],["Stop","z3-btn-stop"],["Mode","z3-btn-mode"],["Reset","z3-btn-reset"]],
+ "04":[["Start","z4-btn-start"],["Stop","z4-btn-stop"],["Mode","z4-btn-mode"],["Reset","z4-btn-reset"]],
  "05":[["Start","z5-btn-start"],["Stop","z5-btn-stop"],["Mode","z5-btn-mode"],["Reset","z5-btn-reset"]]
  };
  const items=controls[selected]||[];
  $("detail-actions").innerHTML=items.map(([label,target,action])=>{
- const disabled=target?!!$(target)?.disabled:false;
- return '<button type="button" '+(disabled?'disabled ':'')+(target?'data-proxy="'+target+'"':'onclick="'+action+'"')+'>'+label+'</button>';
+ const targetElement=target?$(target):null;
+ const hidden=!!targetElement&&getComputedStyle(targetElement).display==="none";
+ const disabled=!!targetElement&&(targetElement.disabled||hidden);
+ return '<button type="button" '+(disabled?'disabled ':'')+(hidden?'style="display:none" ':'')+(target?'data-proxy="'+target+'"':'onclick="'+action+'"')+'>'+label+'</button>';
  }).join("");
  $("detail-hint").textContent=items.length?
  "Commands use the existing zone-specific API and driver. Local PLC/device interlocks remain authoritative.":
