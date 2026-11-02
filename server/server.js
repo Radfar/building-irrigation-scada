@@ -8,6 +8,7 @@ console.log(
 const { startOpcua, stopOpcua, sendCommand, zone3, live } = require("./opcua");
 const zone02 = require('./drivers/micro800/zone02');
 const zone05 = require('./drivers/bacnet/zone05');
+const zone01 = require('./drivers/modbus/zone01');
 const express = require("express");
 const cors = require("cors");
 const {
@@ -27,6 +28,7 @@ const app = express();
 const PORT = 3000;
 //const staleSeconds = Number(process.env.ZONE4_STALE_SECONDS) || 300;
 
+zone01.start();
 zone02.start();
 zone05.start();
 
@@ -50,6 +52,21 @@ app.post("/api/zone3/command", async (req, res) => {
 });
 
 app.get('/api/zone02', (req, res) => res.json(zone02.getObservations()));
+
+// Zone 01 — Python process simulator over Modbus TCP
+app.get('/api/zone01', (req, res) => res.json(zone01.getSnapshot()));
+
+app.post('/api/zone01/command', async (req, res) => {
+  try {
+    const result = await zone01.command(req.body.command);
+    res.json({ ok: true, ...result });
+  } catch (error) {
+    res.status(error.status || 500).json({
+      ok: false,
+      error: error.status ? error.message : 'Internal error'
+    });
+  }
+});
 
 // Zone 05 — BACnet/IP device observations and operator commands
 app.get('/api/zone05', (req, res) => res.json(zone05.getObservations()));
@@ -462,6 +479,7 @@ process.on("SIGINT", async () => {
         stopOpcua(),
         stopMqtt(),
         stopBrokerDiscovery(),
+        zone01.stop(),
         zone02.stop(),
         zone05.stop()
     ]);
