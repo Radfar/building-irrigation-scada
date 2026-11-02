@@ -80,9 +80,16 @@ function render(){
   const disabled=!!targetElement&&(targetElement.disabled||hidden);
   return '<button type="button" '+(disabled?'disabled ':'')+(hidden?'style="display:none" ':'')+'data-proxy="'+target+'">'+label+'</button>';
  }).join("");
+ const zoneHints={
+  "01":"Live process values and operator requests use the Python water-process simulator through Modbus TCP. Process interlocks are evaluated by the simulator.",
+  "02":"Rockwell Micro850 data and whitelisted commands are exchanged through the EtherNet/IP driver.",
+  "03":"CODESYS process data and whitelisted commands are exchanged through the OPC UA client.",
+  "04":"ESP8266 telemetry and acknowledged mode commands use MQTT. Flow and valve indications remain simulated.",
+  "06":"Demonstration placeholder: no live controller connection or field protocol is configured for this zone."
+ };
  $("detail-hint").textContent=items.length?
   "Commands use the existing zone-specific API and driver. Local PLC/device interlocks remain authoritative.":
-  "Demonstration placeholder: no live controller connection or operator command is configured for this zone.";
+  (zoneHints[selected]||"Select a zone to inspect its communication and process information.");
  document.querySelectorAll(".zone[data-zone]").forEach(card=>{
   const active=card.dataset.zone===selected;card.classList.toggle("is-selected",active);card.setAttribute("aria-pressed",String(active));
  });
