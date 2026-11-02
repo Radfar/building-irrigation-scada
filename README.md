@@ -2,12 +2,12 @@
 
 A custom browser-based SCADA/HMI for an industrial water-management testbed. The project brings together different controller and edge technologies behind one web monitoring interface.
 
-The current implementation demonstrates four zone integrations:
+The current implementation demonstrates five connected zone integrations, plus one demonstration placeholder:
 
-- **Zone 02 — Rockwell Micro850:** EtherNet/IP communication using a Node.js driver based on `st-ethernet-ip`.
+- **Zone 01 — Python water-process simulator:** Modbus TCP communication through a native Node.js TCP client driver.
 - **Zone 03 — CODESYS:** OPC UA communication with a CODESYS Control Win runtime.
 - **Zone 04 — IoT Edge:** ESP8266 telemetry and bidirectional mode commands over MQTT.
-- **Zone 05 — BACnet/IP:** an independent irrigation-device simulator accessed by a dedicated Node.js BACnet client driver.
+- **Zone 05 — BACnet/IP:** an independent irrigation-device simulator accessed by a dedicated Node.js BACnet client driver.\n- **Zone 06 — Demonstration placeholder:** no live controller or field protocol is connected.
 
 The web application uses **HTML, CSS and vanilla JavaScript** on the frontend, **Node.js and Express** on the backend, and **PostgreSQL** for equipment, tag configuration and historical readings.
 
@@ -18,14 +18,14 @@ This is an engineering testbed. It is intended to explore controller integration
 ```mermaid
 flowchart TB
   subgraph FIELD["Field and control layer"]
-    Z2["Zone 02<br/>Rockwell Micro850"]
+    Z1["Zone 01<br/>Python water simulator"]\n    Z2["Zone 02<br/>Rockwell Micro850"]
     Z3["Zone 03<br/>CODESYS Control Win"]
     Z4["Zone 04<br/>ESP8266 soil node"]
     Z5["Zone 05<br/>BACnet/IP device simulator"]
   end
 
   subgraph COMM["Communication layer"]
-    EIP["EtherNet/IP"]
+    MOD["Modbus TCP"]\n    EIP["EtherNet/IP"]
     OPC["OPC UA"]
     MQTT["MQTT / Mosquitto"]
     BAC["BACnet/IP over UDP"]
@@ -37,11 +37,11 @@ flowchart TB
     DB[("PostgreSQL")]
   end
 
-  Z2 <-->|"EtherNet/IP"| EIP
+  Z1 <-->|"Modbus TCP"| MOD\n  Z2 <-->|"EtherNet/IP"| EIP
   Z3 <-->|"OPC UA"| OPC
   Z4 <-->|"MQTT telemetry, status and commands"| MQTT
   Z5 <-->|"BACnet/IP"| BAC
-  EIP <--> BE
+  MOD <--> BE\n  EIP <--> BE
   OPC <--> BE
   MQTT <--> BE
   BAC <--> BE
@@ -73,7 +73,7 @@ The project also contains local process simulations. In particular, Zone 04 mois
 | Zone 02 protocol | EtherNet/IP |
 | Zone 03 protocol | OPC UA |
 | Zone 04 protocol | MQTT |
-| Zone 05 protocol | BACnet/IP |
+| Zone 01 protocol | Modbus TCP |\n| Zone 05 protocol | BACnet/IP |
 | MQTT broker | Mosquitto |
 | Edge device | ESP8266 / Wemos D1 |
 | PLC environments | Rockwell CCW / Micro800 and CODESYS |
@@ -81,7 +81,7 @@ The project also contains local process simulations. In particular, Zone 04 mois
 ## Key capabilities
 
 - Multi-brand integration through separate protocol-specific backend drivers.
-- Zone 02 Micro850 polling and controlled Boolean writes.
+- Zone 01 Python process simulation polling and controlled Modbus coil writes.\n- Zone 02 Micro850 polling and controlled Boolean writes.
 - Zone 03 OPC UA tag discovery from the CODESYS `GVL_SCADA` variable group.
 - Zone 03 command whitelist, pulse handling for edge-triggered commands and server-side interlock messages.
 - Zone 04 MQTT telemetry ingestion directly by the Node.js backend.
@@ -92,7 +92,7 @@ The project also contains local process simulations. In particular, Zone 04 mois
 - REST endpoints that separate the browser HMI from industrial protocol details.
 - Zone 05 BACnet/IP polling, normalized observations and whitelisted AUTO/MANUAL/START/STOP/FAULT_RESET commands.
 
-## Zone 02 — Rockwell Micro850
+## Zone 01 — Python water-process simulator and Modbus TCP\n\nThe Node.js driver is located at `server/drivers/modbus/zone01.js`. It reads the Python simulator at `127.0.0.1:1502` (configurable) using Modbus TCP function codes 1–4 and writes the whitelisted command coils using function code 5. The driver exposes a normalized snapshot at `GET /api/zone01` and accepts `auto`, `manual`, `start`, `stop` and `faultreset` at `POST /api/zone01/command`.\n\nThe simulator must be running separately before Zone 01 can report GOOD communication quality. Its analog input registers are scaled by 10 and converted by the driver into engineering units. The driver persists the existing pump, tank and valve tags through the shared PostgreSQL historian. Apply `database/migrations/2026-11-03_zone01_modbus_historian.sql` once after backing up the database.\n\n## Zone 02 — Rockwell Micro850
 
 The Node.js driver is located at `server/drivers/micro800/zone02.js`.
 
@@ -220,7 +220,7 @@ For the complete coverage list, SQL verification query and implementation notes,
 | GET | `/api/tags` | Tag configuration with equipment details |
 | GET | `/api/tags/:tagName/value` | Latest stored value for a tag |
 | GET | `/api/live` | Live CODESYS tag values |
-| GET | `/api/zone02` | Zone 02 observations |
+| GET | `/api/zone01` | Zone 01 Modbus TCP snapshot and communication quality |\n| POST | `/api/zone01/command` | Zone 01 whitelisted AUTO/MANUAL/START/STOP/FAULT_RESET commands |\n| GET | `/api/zone02` | Zone 02 observations |
 | POST | `/api/zone02/command` | Zone 02 whitelisted command |
 | GET | `/api/zone3` | Zone 03 live values |
 | POST | `/api/zone3/command` | Zone 03 whitelisted command |
@@ -274,7 +274,7 @@ npm install
 
 ### 2. Configure PostgreSQL
 
-Create the `building_irrigation` database and apply the SQL schema in `database/schema.sql`. Configure the database connection using the environment variables read by `server/database.js`. Back up the database, then apply the historian registry migration: `database/migrations/2026-11-02_common_historian_registry.sql`.
+Create the `building_irrigation` database and apply the SQL schema in `database/schema.sql`. Configure the database connection using the environment variables read by `server/database.js`. Back up the database, then apply the historian registry migrations: `database/migrations/2026-11-02_common_historian_registry.sql` and `database/migrations/2026-11-03_zone01_modbus_historian.sql`.
 
 ### 3. Configure PLC and MQTT connections
 
@@ -305,7 +305,7 @@ The CODESYS endpoint is currently defined in `server/opcua.js` as `opc.tcp://127
 npm start
 ```
 
-The Express API listens on port 3000. The backend starts the Zone 02 driver, OPC UA client, MQTT client, UDP broker-discovery responder and Zone 05 BACnet/IP client.
+The Express API listens on port 3000. The backend starts the Zone 01 Modbus TCP client, Zone 02 driver, OPC UA client, MQTT client, UDP broker-discovery responder and Zone 05 BACnet/IP client.
 
 ### 5. Open the HMI
 
