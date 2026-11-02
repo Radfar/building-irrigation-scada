@@ -243,8 +243,6 @@ For the complete coverage list, SQL verification query and implementation notes,
 | GET | `/api/live` | Live CODESYS tag values |
 | GET | `/api/zone01` | Zone 01 Modbus TCP snapshot and communication quality |
 | POST | `/api/zone01/command` | Zone 01 whitelisted AUTO/MANUAL/START/STOP/FAULT_RESET commands |
-| GET | `/api/zone01` | Zone 01 Modbus TCP snapshot and communication quality |
-| POST | `/api/zone01/command` | Zone 01 whitelisted AUTO/MANUAL/START/STOP/FAULT_RESET commands |
 | GET | `/api/zone02` | Zone 02 observations |
 | POST | `/api/zone02/command` | Zone 02 whitelisted command |
 | GET | `/api/zone3` | Zone 03 live values |
@@ -285,6 +283,7 @@ node-red/                    Node-RED flow assets retained in the repository
 ### Requirements
 
 - Node.js and npm
+- Python 3 for the Zone 01 process simulator
 - PostgreSQL
 - Mosquitto MQTT broker
 - CODESYS Control Win runtime with OPC UA enabled
@@ -318,7 +317,7 @@ Set the relevant environment variables before starting the service:
 | `MQTT_PORT` | `1883` | Broker port advertised by discovery |
 | `MQTT_DISCOVERY_PORT` | `1884` | UDP discovery listener |
 | `ZONE4_STALE_SECONDS` | `300` | Zone 04 live-data freshness threshold |
-| `HISTORIAN_SAMPLE_INTERVAL_MS` | `5000` | Maximum persistence rate per source for polled Zones 02, 03 and 05 |
+| `HISTORIAN_SAMPLE_INTERVAL_MS` | `5000` | Maximum persistence rate per source for polled Zones 01, 02, 03 and 05 |
 | `ZONE05_BACNET_IP` | unset | Optional unicast Who-Is target if subnet broadcasts are filtered |
 | `ZONE05_BACNET_PORT` | `47809` | Zone 05 BACnet/IP UDP port |
 | `ZONE05_BACNET_DEVICE_INSTANCE` | `10005` | Zone 05 BACnet Device instance |
