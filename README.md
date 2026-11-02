@@ -168,7 +168,7 @@ Zone 05 uses an independently runnable BACnet/IP device simulator in [`Radfar/ba
 
 The driver is `server/drivers/bacnet/zone05.js`. It polls four Analog Inputs, two Binary Inputs and the AUTO-mode Binary Output, then exposes normalized observations through the SCADA API. Operator commands are restricted to AUTO, MANUAL, START, STOP and FAULT_RESET. START, STOP and FAULT_RESET are momentary requests: the driver writes ACTIVE at priority 8, then relinquishes the command slot so the request can be issued again. AUTO/MANUAL is a held command.
 
-Default simulator endpoint: `192.168.186.224:47809/UDP`. Override it with `ZONE05_BACNET_IP` and `ZONE05_BACNET_PORT` when the simulator host changes. The simulator listens on UDP 47809 to avoid the local UDP 47808 service used by another BACnet component in this testbed.
+At startup, the driver sends BACnet Who-Is discovery requests to the local IPv4 subnet broadcast addresses (and optionally to a configured unicast IP), filtered for device instance `10005`. It learns the simulator's current IP and UDP source port from its I-Am response, then starts polling. Discovery retries automatically if the device is not found. Because the simulator uses UDP 47809, the driver explicitly directs Who-Is broadcasts to UDP 47809 rather than the BACnet default UDP 47808. Discovery is intended for devices on the same broadcast-enabled subnet; routed networks require BBMD/Foreign Device Registration or a configured unicast target.
 
 The simulator exposes:
 
@@ -253,10 +253,13 @@ Set the relevant environment variables before starting the service:
 | `MQTT_PORT` | `1883` | Broker port advertised by discovery |
 | `MQTT_DISCOVERY_PORT` | `1884` | UDP discovery listener |
 | `ZONE4_STALE_SECONDS` | `300` | Zone 04 live-data freshness threshold |
-| `ZONE05_BACNET_IP` | `192.168.186.224` | Zone 05 BACnet simulator IP address |
+| `ZONE05_BACNET_IP` | unset | Optional unicast Who-Is target if subnet broadcasts are filtered |
 | `ZONE05_BACNET_PORT` | `47809` | Zone 05 BACnet/IP UDP port |
 | `ZONE05_BACNET_DEVICE_INSTANCE` | `10005` | Zone 05 BACnet Device instance |
 | `ZONE05_BACNET_CLIENT_PORT` | `47810` | Local UDP port used by the SCADA BACnet client |
+| `ZONE05_BACNET_BROADCAST` | auto-detected | Optional directed-broadcast IP override |
+| `ZONE05_BACNET_DISCOVERY_TIMEOUT_MS` | `3000` | Wait time for an I-Am response |
+| `ZONE05_BACNET_DISCOVERY_RETRY_MS` | `5000` | Delay before retrying device discovery |
 | `ZONE05_BACNET_POLL_MS` | `1000` | Zone 05 polling interval |
 
 The CODESYS endpoint is currently defined in `server/opcua.js` as `opc.tcp://127.0.0.1:4840`.
