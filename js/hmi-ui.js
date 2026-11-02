@@ -66,9 +66,11 @@ function render(){
  });
  $("detail-grid").innerHTML=vals.map(v=>metric(v[0],v[1])).join("");
  const controls={
-  "02":[["Start","z2-btn-start"],["Stop","z2-btn-stop"],["Mode","z2-btn-mode"],["Reset","z2-btn-reset"]],
-  "03":[["Start","z3-btn-start"],["Stop","z3-btn-stop"],["Mode","z3-btn-mode"],["Reset","z3-btn-reset"]],
-  "04":[["Start","z4-btn-start"],["Stop","z4-btn-stop"],["Mode","z4-btn-mode"],["Reset","z4-btn-reset"]],
+  // Zones 02–04 keep their original operator controls on the zone cards.
+  // Do not duplicate Start / Stop / Auto controls in the details panel.
+  "02":[],
+  "03":[],
+  "04":[],
   "05":[["Start","z5-btn-start"],["Stop","z5-btn-stop"],["Mode","z5-btn-mode"],["Reset","z5-btn-reset"]]
  };
  const items=controls[selected]||[];
