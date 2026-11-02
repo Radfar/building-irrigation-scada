@@ -1,4 +1,5 @@
 const opcua = require("node-opcua-client");
+const { persistObservations } = require("./historian/historian");
 
 const {
   OPCUAClient,
@@ -13,6 +14,8 @@ const ENDPOINT = "opc.tcp://127.0.0.1:4840";
 const NS_URI = "CODESYSSPV3/3S/IecVarAccess";
 const GVL_PATH = "|var|CODESYS Control Win V3 x64.Application.GVL_SCADA";
 const POLL_MS = 1000;
+const HISTORIAN_TAGS = new Set(["Z03_MOISTURE", "Z03_FLOW", "Z03_VALVE", "Z03_FAULT", "Z03_AUTO"]);
+const HISTORIAN_UNITS = { Z03_MOISTURE: "%", Z03_FLOW: "L/min", Z03_VALVE: "%" };
 const PULSE_MS = 300;   // must be longer than a few PLC scans (R_TRIG needs a rising edge)
 
 /* All live tags from GVL_SCADA: { connected, tags: { NAME: value } } */
@@ -163,6 +166,9 @@ async function startOpcua() {
     try {
       const res = await session.read(nodes);
 
+      const receivedTimestamp = new Date().toISOString();
+      const historianObservations = [];
+
       found.forEach((t, i) => {
         const good = res[i].statusCode.isGood();
         const value = good ? res[i].value.value : null;
@@ -173,10 +179,27 @@ async function startOpcua() {
         if (t.name.startsWith("Z03_")) {
           zone3[t.name.slice(4)] = value;
         }
+
+        if (HISTORIAN_TAGS.has(t.name)) {
+          historianObservations.push({
+            tagName: t.name,
+            value,
+            engineeringUnit: HISTORIAN_UNITS[t.name] || null,
+            sourceSystemId: "zone03-codesys-opcua",
+            protocol: "OPC UA",
+            sourceTimestamp: good ? res[i].sourceTimestamp || null : null,
+            receivedTimestamp,
+            quality: good ? "GOOD" : "BAD",
+            qualityReason: good ? null : res[i].statusCode.toString()
+          });
+        }
       });
 
       live.connected = true;
       zone3.connected = true;
+      persistObservations("zone03-codesys-opcua", historianObservations).catch(error =>
+        console.error("Zone 03 historian write failed:", error.message)
+      );
     }
     catch (e) {
       live.connected = false;
