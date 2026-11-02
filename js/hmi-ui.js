@@ -1,0 +1,74 @@
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const meta = {
+ "01":{name:"Main Entrance",controller:"Demo controller",protocol:"Demo / static HMI",extra:[]},
+ "02":{name:"Courtyard",controller:"Rockwell Micro850",protocol:"EtherNet/IP",extra:[]},
+ "03":{name:"Roof Garden",controller:"CODESYS SoftPLC",protocol:"OPC UA",extra:[]},
+ "04":{name:"East Garden",controller:"ESP8266 IoT edge",protocol:"MQTT / Node-RED",extra:["z4-node","z4-age"]},
+ "05":{name:"West Garden",controller:"BACnet device",protocol:"BACnet/IP",extra:["z5-tank","z5-pump","z5-mode"]},
+ "06":{name:"Parking Landscape",controller:"Demo controller",protocol:"Demo / static HMI",extra:[]}
+};
+let selected="02", theme="dark";
+function applyTheme(value){
+ theme=value==="light"?"light":"dark"; document.body.dataset.theme=theme;
+ const b=$("theme-toggle"); if(b)b.textContent=theme==="dark"?"☀ Light mode":"☾ Dark mode";
+ try{localStorage.setItem("scada-theme",theme)}catch(_){}
+}
+function textValue(id,fallback="N/A"){
+ const e=$(id); if(!e)return fallback; const v=e.textContent.trim(); return v&&v!=="--"?v:fallback;
+}
+function metric(label,value){return '<div class="detail-item"><span>'+label+'</span><strong>'+value+'</strong></div>'}
+function render(){
+ const m=meta[selected], num=Number(selected), badge=$("z"+num+"-status");
+ const status=badge?badge.textContent.trim():(selected==="01"?"RUNNING":"STANDBY");
+ $("detail-title").textContent="Zone "+selected+" • "+m.name;
+ $("detail-status").textContent=status||"UNKNOWN";
+ $("detail-status").className="status "+(badge?badge.className.replace("status","").trim():"ok");
+ $("detail-subtitle").textContent=m.controller+" · "+m.protocol+" · Live overview and available diagnostics";
+ const vals=[
+ ["Process / Communication state",status||"UNKNOWN"],
+ ["Moisture",textValue("z"+num+"-moisture",selected==="01"?"48%":selected==="06"?"52%":"N/A")],
+ ["Flow",textValue("z"+num+"-flow",selected==="01"?"21.3 L/min":selected==="06"?"0 L/min":"N/A")],
+ ["Valve",textValue("z"+num+"-valve",selected==="01"?"100%":selected==="06"?"0%":"N/A")]
+ ];
+ m.extra.forEach(id=>{
+ const labels={"z4-node":"Edge node","z4-age":"Last reading","z5-tank":"Tank level","z5-pump":"Pump state","z5-mode":"Operating mode"};
+ vals.push([labels[id],textValue(id)]);
+ });
+ $("detail-grid").innerHTML=vals.map(v=>metric(v[0],v[1])).join("");
+ const controls={
+ "02":[["Start","z2-btn-start"],["Stop","z2-btn-stop"],["Mode","z2-btn-mode"],["Reset","z2-btn-reset"]],
+ "03":[["Start",null,"zone3Command('start')"],["Stop",null,"zone3Command('stop')"],["Mode",null,"zone3ToggleMode()"],["Reset",null,"zone3Command('faultReset')"]],
+ "04":[["Start",null,"zone4Command('start')"],["Stop",null,"zone4Command('stop')"],["Mode",null,"zone4ToggleMode()"],["Reset",null,"zone4Command('faultReset')"]],
+ "05":[["Start","z5-btn-start"],["Stop","z5-btn-stop"],["Mode","z5-btn-mode"],["Reset","z5-btn-reset"]]
+ };
+ const items=controls[selected]||[];
+ $("detail-actions").innerHTML=items.map(([label,target,action])=>{
+ const disabled=target?!!$(target)?.disabled:false;
+ return '<button type="button" '+(disabled?'disabled ':'')+(target?'data-proxy="'+target+'"':'onclick="'+action+'"')+'>'+label+'</button>';
+ }).join("");
+ $("detail-hint").textContent=items.length?
+ "Commands use the existing zone-specific API and driver. Local PLC/device interlocks remain authoritative.":
+ "Demonstration placeholder: no live controller connection or operator command is configured for this zone.";
+ document.querySelectorAll(".zone[data-zone]").forEach(card=>{
+ const active=card.dataset.zone===selected;card.classList.toggle("is-selected",active);card.setAttribute("aria-pressed",String(active));
+ });
+}
+function select(id){if(meta[id]){selected=id;render()}}
+document.addEventListener("click",e=>{
+ if(e.target.closest("#theme-toggle")){applyTheme(theme==="dark"?"light":"dark");return}
+ const proxy=e.target.closest("[data-proxy]");
+ if(proxy){const target=$(proxy.dataset.proxy);if(target&&!target.disabled)target.click();return}
+ const card=e.target.closest(".zone[data-zone]");if(card)select(card.dataset.zone);
+});
+document.addEventListener("keydown",e=>{
+ const card=e.target.closest?.(".zone[data-zone]");
+ if(card&&(e.key==="Enter"||e.key===" ")){e.preventDefault();select(card.dataset.zone)}
+});
+function init(){
+ let saved="dark";try{saved=localStorage.getItem("scada-theme")||"dark"}catch(_){}
+ applyTheme(saved);render();window.setInterval(render,1000);
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
