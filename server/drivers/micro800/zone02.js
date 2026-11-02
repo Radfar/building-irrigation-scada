@@ -1,5 +1,6 @@
 const { Controller, Tag } = require('st-ethernet-ip');
 const { unitFor } = require('../../contracts/units');
+const { persistObservations } = require('../../historian/historian');
 const PLC_IP   = process.env.ZONE02_PLC_IP || '192.168.203.1';
 const POLL_MS  = 1000;
 const RETRY_MS = 5000;
@@ -71,7 +72,10 @@ function poll() {
       }
     }
     state.timestamp = new Date().toISOString();
-  }).then(() => {
+  }).then(async () => {
+    persistObservations('zone02-micro850', getObservations()).catch(e =>
+      console.error('[zone02] historian write failed:', e.message)
+    );
     timer = setTimeout(poll, POLL_MS);
   }).catch(e => {
     console.error('[zone02] poll failed, reconnecting:', e.message);
