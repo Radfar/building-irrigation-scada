@@ -1590,6 +1590,15 @@
         .zone .zone-data { min-height:43px; }
         .zone .bar { margin-top:auto; }
         .zone:focus-visible { outline:2px solid var(--blue);outline-offset:2px; }
+
+        .zone-filter { display:flex;align-items:center;gap:8px;flex-wrap:wrap; }
+        .zone-filter label { color:var(--muted);font-size:10px; }
+        .zone-filter select { min-width:142px;padding:7px 30px 7px 10px;border:1px solid var(--border-light);border-radius:7px;background:var(--panel-2);color:var(--text);font:inherit;font-size:11px; }
+        .zone-filter select:focus-visible { outline:2px solid var(--blue);outline-offset:2px; }
+        .zone-filter-count { color:var(--muted);font-size:10px;white-space:nowrap; }
+        .zone-filter-empty { grid-column:1/-1;padding:22px 14px;border:1px dashed var(--border-light);border-radius:8px;color:var(--muted);text-align:center;font-size:12px; }
+        @media(max-width:520px){.zone-filter{width:100%;justify-content:space-between}.zone-filter select{flex:1;min-width:0}}
+
         .zone-details { margin-bottom:15px; }
         .zone-details .detail-intro { color:var(--muted);font-size:11px;line-height:1.6;margin:7px 0 13px; }
         .detail-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px; }
@@ -1913,14 +1922,22 @@
                             Irrigation Zones
                         </h3>
 
-                        <span class="kpi-label">
-                            8 zones
-                        </span>
+                        <div class="zone-filter">
+                            <label for="zone-filter-select">View</label>
+                            <select id="zone-filter-select" aria-label="Filter irrigation zones">
+                                <option value="all">All zones</option>
+                                <option value="active">Active zones</option>
+                                <option value="standby">Standby zones</option>
+                                <option value="attention">Fault / Offline</option>
+                            </select>
+                            <span id="zone-filter-count" class="kpi-label">6 zones</span>
+                        </div>
 
                     </div>
 
 
                     <div class="plant-layout">
+                        <div id="zone-filter-empty" class="zone-filter-empty" hidden>No zones match this filter. Select another view to see more zones.</div>
 
 
                         <!-- ZONE 01 -->
