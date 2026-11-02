@@ -259,5 +259,5 @@ module.exports = {
   stop,
   command,
   getObservations,
-  getSnapshot: () => ({ ...state, values: { ...state.values } })
+  getSnapshot: () => ({ ...state, quality: state.connected ? "GOOD" : "BAD", protocol: "Modbus TCP", sourceSystemId: "zone01-python-modbus-tcp", values: { ...state.values } })
 };
