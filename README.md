@@ -107,7 +107,7 @@ The Node.js driver is located at `server/drivers/modbus/zone01.js`. It reads the
 
 The simulator must be running separately before Zone 01 can report GOOD communication quality. Its analog input registers are scaled by 10 and converted by the driver into engineering units. The driver persists the existing pump, tank and valve tags through the shared PostgreSQL historian. Apply `database/migrations/2026-11-03_zone01_modbus_historian.sql` once after backing up the database.
 
-## Zone 01 — Python water-process simulator and Modbus TCP
+
 
 The Node.js driver is located at `server/drivers/modbus/zone01.js`. It reads the Python simulator at `127.0.0.1:1502` (configurable) using Modbus TCP function codes 1–4 and writes the whitelisted command coils using function code 5. The driver exposes a normalized snapshot at `GET /api/zone01` and accepts `auto`, `manual`, `start`, `stop` and `faultreset` at `POST /api/zone01/command`.
 
