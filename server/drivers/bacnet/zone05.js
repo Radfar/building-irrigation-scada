@@ -1,4 +1,5 @@
 const Bacnet = require('node-bacnet');
+const { persistObservations } = require('../../historian/historian');
 
 const DEVICE_IP = process.env.ZONE05_BACNET_IP || '192.168.186.224';
 const DEVICE_PORT = Number(process.env.ZONE05_BACNET_PORT || 47809);
@@ -70,6 +71,9 @@ async function poll() {
     state.values = next;
     state.connected = true;
     state.timestamp = new Date().toISOString();
+    persistObservations('zone05-bacnet-device-10005', getObservations()).catch(error =>
+      console.error('[zone05-bacnet] historian write failed:', error.message)
+    );
   });
   pollLock = run.catch(() => {});
   return run;
