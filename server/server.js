@@ -455,6 +455,7 @@ process.on("SIGINT", async () => {
         stopOpcua(),
         stopMqtt(),
         stopBrokerDiscovery(),
+        zone02.stop(),
         zone05.stop()
     ]);
 
