@@ -1585,6 +1585,7 @@
         .zone { min-height:174px;display:flex;flex-direction:column;cursor:pointer;transition:border-color .16s,box-shadow .16s,transform .16s; }
         .zone:hover { border-color:var(--blue);transform:translateY(-1px); }
         .zone.is-selected { border-color:var(--cyan);box-shadow:0 0 0 2px rgba(68,215,232,.18),0 8px 24px rgba(0,0,0,.12); }
+        .zone[data-zone="01"] .bar + .zone-data { display:none; }
         .zone .controls { display:flex !important; }
         .zone[data-zone="05"] .bar + .zone-data { display:none; }
         .zone .zone-data { min-height:43px; }
@@ -1941,64 +1942,31 @@
                         <div id="zone-filter-empty" class="zone-filter-empty" hidden>No zones match this filter. Select another view to see more zones.</div>
 
 
-                        <!-- ZONE 01 -->
-
+                        <!-- ZONE 01 — Python water process simulator / Modbus TCP -->
                         <div class="zone" data-zone="01" role="button" tabindex="0" aria-pressed="false">
-
                             <div class="zone-head">
-
-                                <span class="zone-name">
-                                    Zone 01 • Main Entrance
-                                </span>
-
-                                <span class="status ok">
-                                    RUNNING
-                                </span>
-
+                                <span class="zone-name">Zone 01 • Water Storage Tank</span>
+                                <span id="z1-status" class="status warn">CONNECTING</span>
                             </div>
-
-
                             <div class="zone-data">
-
-                                <div class="metric">
-                                    Moisture
-                                    <strong>48%</strong>
-                                </div>
-
-                                <div class="metric">
-                                    Flow
-                                    <strong>21.3 L/min</strong>
-                                </div>
-
-                                <div class="metric">
-                                    Valve
-                                    <strong>100%</strong>
-                                </div>
-
+                                <div class="metric">Tank level<strong id="z1-tank">--</strong></div>
+                                <div class="metric">Flow<strong id="z1-flow">--</strong></div>
+                                <div class="metric">Valve<strong id="z1-valve">--</strong></div>
                             </div>
-
-
-                            <div class="bar">
-                                <span style="width:48%"></span>
+                            <div class="bar"><span id="z1-bar" style="width:0%"></span></div>
+                            <div class="zone-data">
+                                <div class="metric">Pump frequency<strong id="z1-frequency">--</strong></div>
+                                <div class="metric">Pump state<strong id="z1-pump">--</strong></div>
+                                <div class="metric">Mode<strong id="z1-mode">--</strong></div>
+                                <div class="metric">Operator STOP latch<strong id="z1-latch">--</strong></div>
                             </div>
-
-
                             <div class="controls">
-
-                                <button onclick="toggle(this)">
-                                    Stop
-                                </button>
-
-                                <button>
-                                    Manual
-                                </button>
-
-                                <button>
-                                    Details
-                                </button>
-
+                                <button id="z1-btn-start" onclick="zone1Command('start')" disabled>Start</button>
+                                <button id="z1-btn-stop" onclick="zone1Command('stop')" disabled>Stop</button>
+                                <button id="z1-btn-mode" onclick="zone1ToggleMode()" disabled>--</button>
+                                <button id="z1-btn-reset" onclick="zone1Command('faultreset')" disabled>Reset</button>
+                                <button id="z1-btn-reenable" onclick="zone1Command('reenable')" disabled>Re-enable</button>
                             </div>
-
                         </div>
 
 
@@ -2840,6 +2808,7 @@
 <script src="js/tags.js"></script>
 <script src="js/zone02.js"></script>
 <script src="js/zone05.js"></script>
+<script src="js/zone01.js"></script>
 <script src="js/hmi-ui.js"></script>
 </body>
 
