@@ -103,15 +103,45 @@ The project also contains local process simulations. In particular, Zone 04 mois
 
 ## Zone 01 — Python water-process simulator and Modbus TCP
 
-The Node.js driver is located at `server/drivers/modbus/zone01.js`. It reads the Python simulator at `127.0.0.1:1502` (configurable) using Modbus TCP function codes 1–4 and writes the whitelisted command coils using function code 5. The driver exposes a normalized snapshot at `GET /api/zone01` and accepts `auto`, `manual`, `start`, `stop` and `faultreset` at `POST /api/zone01/command`.
+The standalone simulator is maintained in [`Radfar/industrial-water-modbus-simulator`](https://github.com/Radfar/industrial-water-modbus-simulator). A version-pinned integration copy is included at `simulators/python-modbus-zone01/` so this Web SCADA repository can be cloned and tested as a complete testbed. Develop simulator logic in the standalone repository first, then synchronize the integration copy deliberately; do not maintain two independent versions.
 
-The simulator must be running separately before Zone 01 can report GOOD communication quality. Its analog input registers are scaled by 10 and converted by the driver into engineering units. The driver persists the existing pump, tank and valve tags through the shared PostgreSQL historian. Apply `database/migrations/2026-11-03_zone01_modbus_historian.sql` once after backing up the database.
+### Start the Python simulator
 
+Open a terminal in the Web SCADA repository root, then:
 
+```powershell
+cd simulators/python-modbus-zone01
+python -m venv .venv
+.\\.venv\\Scripts\\Activate.ps1
+python -m pip install -r requirements.txt
+python -m src.main
+```
 
-The Node.js driver is located at `server/drivers/modbus/zone01.js`. It reads the Python simulator at `127.0.0.1:1502` (configurable) using Modbus TCP function codes 1–4 and writes the whitelisted command coils using function code 5. The driver exposes a normalized snapshot at `GET /api/zone01` and accepts `auto`, `manual`, `start`, `stop` and `faultreset` at `POST /api/zone01/command`.
+The simulator listens on `127.0.0.1:1502`, Unit ID 1. Keep this terminal running. The default loopback binding is suitable for a local Node.js client; for a VM or another host, configure a reachable interface and network/firewall rules deliberately.
 
-The simulator must be running separately before Zone 01 can report GOOD communication quality. Its analog input registers are scaled by 10 and converted by the driver into engineering units. The driver persists the existing pump, tank and valve tags through the shared PostgreSQL historian. Apply `database/migrations/2026-11-03_zone01_modbus_historian.sql` once after backing up the database.
+### Verify the simulator
+
+In a second terminal, from `simulators/python-modbus-zone01` with the virtual environment active:
+
+```powershell
+python -m unittest discover -s tests -v
+python -m src.client_check
+python -m src.live_process_check
+```
+
+The client checks require the simulator to be running. The unit tests do not.
+
+### Node.js integration
+
+The Node.js driver is `server/drivers/modbus/zone01.js`. It reads five coils, 14 discrete inputs, five holding registers and six input registers using Modbus TCP function codes 1–4. It writes whitelisted command coils using function code 5.
+
+Default connection settings are host `127.0.0.1`, port `1502`, Unit ID `1`. Override them with `ZONE01_MODBUS_HOST`, `ZONE01_MODBUS_PORT` and `ZONE01_MODBUS_UNIT_ID`.
+
+The driver exposes a normalized snapshot at `GET /api/zone01` and accepts `auto`, `manual`, `start`, `stop`, `faultreset` and `reenable` at `POST /api/zone01/command`. A successful command response confirms that the Modbus write was accepted; the HMI must separately observe the updated controller state and process feedback.
+
+The register map includes the operator STOP latch at discrete input offset 13 and the RE-ENABLE command at coil offset 4. Analog registers use a scale factor of 10. The HMI displays the latch state and provides a separate RE-ENABLE control; RE-ENABLE clears the latch but does not issue START.
+
+The driver persists the Zone 01 pump, tank, valve and operator-stop-latch observations through the shared PostgreSQL historian. Back up the database, then apply `database/migrations/2026-11-03_zone01_modbus_historian.sql` once. The migration is safe to rerun.
 
 ## Zone 02 — Rockwell Micro850
 
@@ -242,7 +272,7 @@ For the complete coverage list, SQL verification query and implementation notes,
 | GET | `/api/tags/:tagName/value` | Latest stored value for a tag |
 | GET | `/api/live` | Live CODESYS tag values |
 | GET | `/api/zone01` | Zone 01 Modbus TCP snapshot and communication quality |
-| POST | `/api/zone01/command` | Zone 01 whitelisted AUTO/MANUAL/START/STOP/FAULT_RESET commands |
+| POST | `/api/zone01/command` | Zone 01 whitelisted AUTO/MANUAL/START/STOP/FAULT_RESET/RE-ENABLE commands |
 | GET | `/api/zone02` | Zone 02 observations |
 | POST | `/api/zone02/command` | Zone 02 whitelisted command |
 | GET | `/api/zone3` | Zone 03 live values |
