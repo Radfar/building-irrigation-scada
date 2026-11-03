@@ -1,0 +1,76 @@
+{attribute 'qualified_only'}
+VAR_GLOBAL
+
+    // =========================================================
+    // ZONE 03 - OPERATOR COMMANDS
+    // =========================================================
+
+    Z03_AUTO         : BOOL := FALSE;
+    Z03_START        : BOOL := FALSE;
+    Z03_STOP         : BOOL := FALSE;
+    Z03_FAULT_RESET  : BOOL := FALSE;
+
+
+    // =========================================================
+    // ZONE 03 - PROCESS FEEDBACK
+    // =========================================================
+
+    Z03_RUN_FEEDBACK : BOOL := FALSE;
+    Z03_VALVE        : REAL := 0.0;       // Valve position %
+    Z03_FLOW         : REAL := 0.0;       // L/min
+    Z03_MOISTURE     : REAL := 35.0;      // %
+    Z03_FAULT        : BOOL := FALSE;
+    Z03_LOW_FLOW     : BOOL := FALSE;
+
+
+    // =========================================================
+    // ZONE 03 - CONTROL / STATUS
+    // =========================================================
+
+    Z03_PERMISSIVE   : BOOL := TRUE;
+    Z03_RUNNING      : BOOL := FALSE;
+    Z03_MANUAL       : BOOL := TRUE;
+    Z03_AUTO_ACTIVE  : BOOL := FALSE;
+
+    Z03_COMMANDED    : BOOL := FALSE;
+
+    Z03_FLOW_OK      : BOOL := FALSE;
+    Z03_PROCESS_OK   : BOOL := TRUE;
+
+
+    // =========================================================
+    // ZONE 03 - SIMULATION PARAMETERS
+    // =========================================================
+
+    Z03_SIM_ENABLE          : BOOL := TRUE;
+
+    Z03_SIM_FLOW_TARGET     : REAL := 100.0;    // L/min
+    Z03_SIM_FLOW_RATE       : REAL := 5.0;      // L/min per update
+    Z03_SIM_MOISTURE_RATE   : REAL := 0.05;     // % per update
+    Z03_SIM_DRY_RATE        : REAL := 0.01;     // % per update
+
+    Z03_SIM_LOW_FLOW_LIMIT  : REAL := 60.0;     // L/min
+
+    Z03_SIM_RESTRICTION     : BOOL := FALSE;
+    Z03_SIM_SENSOR_FAULT    : BOOL := FALSE;
+    Z03_SIM_ACTUATOR_FAULT  : BOOL := FALSE;
+	Z03_SIM_COMM_FAULT 		: BOOL := FALSE;
+
+    // =========================================================
+    // ZONE 03 - AUTOMATIC CONTROL SETPOINTS
+    // =========================================================
+
+    Z03_MOISTURE_LOW_SP     : REAL := 30.0;
+    Z03_MOISTURE_HIGH_SP    : REAL := 70.0;
+
+
+    // =========================================================
+    // ZONE 03 - DIAGNOSTICS
+    // =========================================================
+
+    Z03_COMM_OK             : BOOL := TRUE;
+    Z03_SIM_ACTIVE          : BOOL := FALSE;
+
+    Z03_TOTAL_RUNTIME_SEC   : UDINT := 0;
+
+END_VAR
