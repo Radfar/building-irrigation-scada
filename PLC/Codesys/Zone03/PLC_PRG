@@ -1,0 +1,47 @@
+PROGRAM PLC_PRG
+VAR
+
+    fbZone3 : FB_IrrigationZone;
+END_VAR
+
+fbZone3(
+    xCmdStart           := GVL_SCADA.Z03_START,
+    xCmdStop             := GVL_SCADA.Z03_STOP,
+    xCmdFaultReset       := GVL_SCADA.Z03_FAULT_RESET,
+    xAuto                := GVL_SCADA.Z03_AUTO,
+    xSimEnable           := GVL_SCADA.Z03_SIM_ENABLE,
+    xSimCommFault        := GVL_SCADA.Z03_SIM_COMM_FAULT,
+    xSimActuatorFault    := GVL_SCADA.Z03_SIM_ACTUATOR_FAULT,
+    xSimSensorFault      := GVL_SCADA.Z03_SIM_SENSOR_FAULT,
+    xSimRestriction      := GVL_SCADA.Z03_SIM_RESTRICTION,
+    rMoistureLowSP       := GVL_SCADA.Z03_MOISTURE_LOW_SP,
+    rMoistureHighSP      := GVL_SCADA.Z03_MOISTURE_HIGH_SP,
+    rSimFlowTarget       := GVL_SCADA.Z03_SIM_FLOW_TARGET,
+    rSimFlowRate         := GVL_SCADA.Z03_SIM_FLOW_RATE,
+    rSimMoistureRate     := GVL_SCADA.Z03_SIM_MOISTURE_RATE,
+    rSimDryRate          := GVL_SCADA.Z03_SIM_DRY_RATE,
+    rSimLowFlowLimit     := GVL_SCADA.Z03_SIM_LOW_FLOW_LIMIT,
+
+    xRunning             => GVL_SCADA.Z03_RUNNING,
+    xRunFeedback         => GVL_SCADA.Z03_RUN_FEEDBACK,
+    xFault                => GVL_SCADA.Z03_FAULT,
+    xPermissive          => GVL_SCADA.Z03_PERMISSIVE,
+    xFlowOK              => GVL_SCADA.Z03_FLOW_OK,
+    xProcessOK           => GVL_SCADA.Z03_PROCESS_OK,
+    xCommanded           => GVL_SCADA.Z03_COMMANDED,
+    xAutoActive          => GVL_SCADA.Z03_AUTO_ACTIVE,
+    xManual              => GVL_SCADA.Z03_MANUAL,
+    xLowFlow             => GVL_SCADA.Z03_LOW_FLOW,
+    xCommOK              => GVL_SCADA.Z03_COMM_OK,
+    xSimActive           => GVL_SCADA.Z03_SIM_ACTIVE,
+    rFlow                => GVL_SCADA.Z03_FLOW,
+    rMoisture            => GVL_SCADA.Z03_MOISTURE,
+    rValvePosition       => GVL_SCADA.Z03_VALVE,
+    udiTotalRuntimeSec   => GVL_SCADA.Z03_TOTAL_RUNTIME_SEC
+);
+
+// Command consumption — clear momentary commands after this scan processed them
+IF GVL_SCADA.Z03_START THEN GVL_SCADA.Z03_START := FALSE; END_IF;
+IF GVL_SCADA.Z03_STOP THEN GVL_SCADA.Z03_STOP := FALSE; END_IF;
+IF GVL_SCADA.Z03_FAULT_RESET THEN GVL_SCADA.Z03_FAULT_RESET := FALSE; END_IF;
+

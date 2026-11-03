@@ -1,0 +1,56 @@
+(*
+Source reference: Zone03 / CODESYS / FB_IrrigationZone declaration
+Recovered from: docs/plc-source-reference-baseline
+Verification: NOT VERIFIED against the current native CODESYS application
+Native project: intentionally not included in this repository
+*)
+FUNCTION_BLOCK FB_IrrigationZone
+VAR_INPUT
+    xCmdStart           : BOOL;   (* momentary/latched command from SCADA, cleared after use *)
+    xCmdStop             : BOOL;
+    xCmdFaultReset       : BOOL;
+    xAuto                : BOOL;  (* TRUE = automatic moisture-threshold control *)
+    xSimEnable           : BOOL;  (* master enable — nothing runs while FALSE *)
+    xSimCommFault        : BOOL;
+    xSimActuatorFault    : BOOL;
+    xSimSensorFault      : BOOL;
+    xSimRestriction      : BOOL;
+    rMoistureLowSP       : REAL;
+    rMoistureHighSP      : REAL;
+    rSimFlowTarget       : REAL;
+    rSimFlowRate         : REAL;
+    rSimMoistureRate     : REAL;
+    rSimDryRate          : REAL;
+    rSimLowFlowLimit     : REAL;
+END_VAR
+VAR_OUTPUT
+    xRunning             : BOOL;
+    xRunFeedback         : BOOL;
+    xFault                : BOOL;
+    xPermissive          : BOOL;
+    xFlowOK              : BOOL;
+    xProcessOK           : BOOL;
+    xCommanded           : BOOL;
+    xAutoActive          : BOOL;
+    xManual              : BOOL;
+    xLowFlow             : BOOL;
+    xCommOK              : BOOL;
+    xSimActive           : BOOL;
+    rFlow                : REAL;
+    rMoisture            : REAL;
+    rValvePosition       : REAL;  (* 0.0-100.0 *)
+    udiTotalRuntimeSec   : UDINT;
+END_VAR
+VAR
+    xFaultLatch          : BOOL;
+    xAutoDemand          : BOOL;
+    rFlowTarget          : REAL;
+    rFlowError           : REAL;
+    rFlowStep            : REAL;
+    rMoistureStep        : REAL;
+    uiRuntimeTicks       : UINT;
+    rtStart              : R_TRIG;
+    rtStop               : R_TRIG;
+    rtFaultReset         : R_TRIG;
+    fbTick               : TON;
+END_VAR
