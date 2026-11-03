@@ -140,6 +140,7 @@ function getObservations() {
     P01_SPEED: ["pumpSpeed", "%"],
     P01_RUN_FEEDBACK: ["runFeedback", ""],
     P01_FAULT: ["pumpFault", ""],
+    Z01_OPERATOR_STOP_LATCHED: ["operatorStopLatched", ""],
     V01_POSITION: ["valvePosition", "%"]
   };
   return Object.entries(map).map(([tagName, [key, engineeringUnit]]) => ({
@@ -161,8 +162,8 @@ async function poll() {
   try {
     // Keep requests sequential on this TCP connection. Some Modbus TCP
     // servers do not reliably handle multiple outstanding requests per client.
-    const coils = await client.readBits(1, 0, 4);
-    const discreteInputs = await client.readBits(2, 0, 13);
+    const coils = await client.readBits(1, 0, 5);
+    const discreteInputs = await client.readBits(2, 0, 14);
     const holding = await client.readRegisters(3, 0, 5);
     const input = await client.readRegisters(4, 0, 6);
     const next = {
@@ -180,6 +181,7 @@ async function poll() {
       tankLow: discreteInputs[10],
       tankHigh: discreteInputs[11],
       valveOpenFeedback: discreteInputs[12],
+      operatorStopLatched: discreteInputs[13],
       pumpFrequencySetpoint: scaled(holding[0]),
       valvePositionSetpoint: scaled(holding[1]),
       flowLowSetpoint: scaled(holding[2]),
@@ -222,7 +224,9 @@ async function command(name) {
     start: [1, true],
     stop: [2, true],
     faultreset: [3, true],
-    "fault-reset": [3, true]
+    "fault-reset": [3, true],
+    reenable: [4, true],
+    "re-enable": [4, true]
   };
   const action = commands[String(name || "").toLowerCase()];
   if (!action) {
