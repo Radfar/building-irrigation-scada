@@ -159,19 +159,12 @@ async function poll() {
   if (polling || stopped) return;
   polling = true;
   try {
-<<<<<<< Updated upstream
     // Keep requests sequential on this TCP connection. Some Modbus TCP
     // servers do not reliably handle multiple outstanding requests per client.
     const coils = await client.readBits(1, 0, 4);
     const discreteInputs = await client.readBits(2, 0, 13);
     const holding = await client.readRegisters(3, 0, 5);
     const input = await client.readRegisters(4, 0, 6);
-=======
-    const coils = await client.readBits(1, 0, 4);
-    const discreteInputs = await client.readBits(2, 0, 13);
-    const holding = await client.readRegisters(3, 0, 5);
-    const input = await client.readRegisters(4, 0, 6);  
->>>>>>> Stashed changes
     const next = {
       auto: coils[0],
       runFeedback: discreteInputs[0],
