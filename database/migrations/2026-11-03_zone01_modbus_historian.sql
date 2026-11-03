@@ -10,6 +10,7 @@ FROM (VALUES
   ('P-01', 'P01_FLOW', 'Zone 01 simulated pump flow', 'FLOAT', 'L/min'),
   ('P-01', 'P01_RUN_FEEDBACK', 'Zone 01 simulated pump run feedback', 'BOOLEAN', NULL),
   ('P-01', 'P01_FAULT', 'Zone 01 simulated pump fault status', 'BOOLEAN', NULL),
+  ('P-01', 'Z01_OPERATOR_STOP_LATCHED', 'Zone 01 operator STOP latch status', 'BOOLEAN', NULL),
   ('T-01', 'T01_LEVEL', 'Zone 01 simulated tank level', 'FLOAT', '%'),
   ('V-01', 'V01_POSITION', 'Zone 01 simulated valve position', 'FLOAT', '%')
 ) AS v(equipment_tag, tag_name, description, data_type, unit)
