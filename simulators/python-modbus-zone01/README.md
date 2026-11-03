@@ -1,6 +1,6 @@
 # Zone 01 Python Modbus Simulator (Web SCADA Integration Copy)
 
-> **Canonical source:** [Radfar/industrial-water-modbus-simulator](https://github.com/Radfar/industrial-water-modbus-simulator), branch `feature/zone01-latched-stop-reenable`. This directory is a version-pinned integration copy. Develop simulator logic in the standalone repository first, then synchronize this copy deliberately. Do not edit both copies independently.
+> **Canonical source:** [Radfar/industrial-water-modbus-simulator](https://github.com/Radfar/industrial-water-modbus-simulator), commit [`471099473e5997e84347137b5fcb6d379c4f42b5`](https://github.com/Radfar/industrial-water-modbus-simulator/commit/471099473e5997e84347137b5fcb6d379c4f42b5). This directory is a version-pinned integration copy. Develop simulator logic in the standalone repository first, then synchronize this copy deliberately. Do not edit both copies independently.
 
 A Python-based Modbus TCP device and water-process simulator for the Industrial Water Management testbed.
 
@@ -10,7 +10,7 @@ Zone 01 models a pump transferring water through a control valve into a storage 
 
 - **Milestone 1 — Register map:** complete.
 - **Milestone 2 — Modbus TCP server:** implemented and locally verified.
-- **Milestone 3 — Process and control integration:** implemented in the repository; the latest integrated test suite still needs to be run locally.
+- **Milestone 3 — Process and control integration:** implemented in the repository; the 62-test unit suite, Modbus TCP client check, and live process check have passed in the standalone repository.
 
 The 500 ms nominal runtime scan connects the command processor, water-process model, and Modbus memory. START, STOP, FAULT_RESET, and RE-ENABLE are momentary requests consumed by the runtime. AUTO is a maintained mode selection. STOP sets a controller-owned operator-stop latch; RE-ENABLE clears it but does not issue START.
 
