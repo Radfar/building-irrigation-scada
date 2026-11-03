@@ -1962,12 +1962,14 @@
                                 <div class="metric">Pump frequency<strong id="z1-frequency">--</strong></div>
                                 <div class="metric">Pump state<strong id="z1-pump">--</strong></div>
                                 <div class="metric">Mode<strong id="z1-mode">--</strong></div>
+                                <div class="metric">Operator STOP latch<strong id="z1-latch">--</strong></div>
                             </div>
                             <div class="controls">
                                 <button id="z1-btn-start" onclick="zone1Command('start')" disabled>Start</button>
                                 <button id="z1-btn-stop" onclick="zone1Command('stop')" disabled>Stop</button>
                                 <button id="z1-btn-mode" onclick="zone1ToggleMode()" disabled>--</button>
                                 <button id="z1-btn-reset" onclick="zone1Command('faultreset')" disabled>Reset</button>
+                                <button id="z1-btn-reenable" onclick="zone1Command('reenable')" disabled>Re-enable</button>
                             </div>
                         </div>
 
