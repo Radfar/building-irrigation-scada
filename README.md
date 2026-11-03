@@ -220,6 +220,8 @@ For the complete coverage list, SQL verification query and implementation notes,
 | GET | `/api/tags` | Tag configuration with equipment details |
 | GET | `/api/tags/:tagName/value` | Latest stored value for a tag |
 | GET | `/api/live` | Live CODESYS tag values |
+| GET | `/api/zone01` | Zone 01 Modbus TCP snapshot and communication quality |
+| POST | `/api/zone01/command` | Zone 01 whitelisted AUTO/MANUAL/START/STOP/FAULT_RESET/RE-ENABLE commands |
 | GET | `/api/zone02` | Zone 02 observations |
 | POST | `/api/zone02/command` | Zone 02 whitelisted command |
 | GET | `/api/zone3` | Zone 03 live values |
@@ -259,6 +261,7 @@ node-red/                    Node-RED flow assets retained in the repository
 ### Requirements
 
 - Node.js and npm
+- Python 3 for the Zone 01 process simulator
 - PostgreSQL
 - Mosquitto MQTT broker
 - CODESYS Control Win runtime with OPC UA enabled
@@ -282,6 +285,11 @@ Set the relevant environment variables before starting the service:
 
 | Variable | Default | Purpose |
 |---|---|---|
+| `ZONE01_MODBUS_HOST` | `127.0.0.1` | Zone 01 simulator host |
+| `ZONE01_MODBUS_PORT` | `1502` | Zone 01 Modbus TCP port |
+| `ZONE01_MODBUS_UNIT_ID` | `1` | Zone 01 Modbus unit identifier |
+| `ZONE01_MODBUS_POLL_MS` | `1000` | Zone 01 polling interval |
+| `ZONE01_MODBUS_TIMEOUT_MS` | `2000` | Zone 01 request timeout |
 | `ZONE02_PLC_IP` | `192.168.203.1` | Micro850 address |
 | `MQTT_URL` | `mqtt://localhost:1883` | MQTT broker URL |
 | `MQTT_PORT` | `1883` | Broker port advertised by discovery |
@@ -305,13 +313,48 @@ The CODESYS endpoint is currently defined in `server/opcua.js` as `opc.tcp://127
 npm start
 ```
 
-The Express API listens on port 3000. The backend starts the Zone 02 driver, OPC UA client, MQTT client, UDP broker-discovery responder and Zone 05 BACnet/IP client.
+The Express API listens on port 3000. The backend starts the Zone 01 Modbus TCP client, Zone 02 driver, OPC UA client, MQTT client, UDP broker-discovery responder and Zone 05 BACnet/IP client.
 
 ### 5. Open the HMI
 
 Serve `index.html` through a local web server, such as the VS Code Live Server extension, and open it in a browser.
 
 Check the API health endpoint at `http://localhost:3000/api`.
+
+## Zone 01 — Python water-process simulator and Modbus TCP
+
+Zone 01 models a water storage tank filling process using a pump and valve. The canonical simulator source is maintained in [Radfar/industrial-water-modbus-simulator](https://github.com/Radfar/industrial-water-modbus-simulator). A version-pinned integration copy is included at `simulators/python-modbus-zone01/` for reproducible Web SCADA development. Develop simulator logic in the standalone repository first, then synchronize the integration copy deliberately.
+
+### Start the simulator
+
+Open a terminal in the Web SCADA repository root:
+
+```powershell
+cd simulators/python-modbus-zone01
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python -m src.main
+```
+
+The simulator listens on `127.0.0.1:1502`, Unit ID 1. Keep it running while the Node.js backend is active. In a second terminal, activate the same virtual environment and run:
+
+```powershell
+python -m unittest discover -s tests -v
+python -m src.client_check
+python -m src.live_process_check
+```
+
+### Node.js integration
+
+The driver is `server/drivers/modbus/zone01.js`. It polls five coils, 14 discrete inputs, five holding registers and six input registers, and exposes:
+
+- `GET /api/zone01` — normalized process snapshot and communication quality.
+- `POST /api/zone01/command` — whitelisted `auto`, `manual`, `start`, `stop`, `faultreset` and `reenable` commands.
+
+A successful command response confirms that the Modbus write was accepted; the HMI separately observes the controller state and process feedback. The operator STOP latch is read at discrete input offset 13; RE-ENABLE is written to coil offset 4 and does not issue START. Analog values use a scale factor of 10.
+
+The driver stores eight Zone 01 observations in the PostgreSQL historian. Back up the database, then apply `database/migrations/2026-11-03_zone01_modbus_historian.sql`. The migration registers the operator STOP latch tag as well as pump, tank and valve observations, and is safe to rerun.
 
 ## Engineering limitations and security
 

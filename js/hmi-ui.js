@@ -2,7 +2,7 @@
 "use strict";
 const $ = id => document.getElementById(id);
 const meta = {
- "01":{name:"Main Entrance",controller:"Demo controller",protocol:"Demo / static HMI",extra:[]},
+ "01":{name:"Water Storage Tank",controller:"Python water-process simulator",protocol:"Modbus TCP",extra:["z1-frequency","z1-pump","z1-mode","z1-latch"]},
  "02":{name:"Courtyard",controller:"Rockwell Micro850",protocol:"EtherNet/IP",extra:[]},
  "03":{name:"Roof Garden",controller:"CODESYS SoftPLC",protocol:"OPC UA",extra:[]},
  "04":{name:"East Garden",controller:"ESP8266 IoT edge",protocol:"MQTT / Node-RED",extra:["z4-node","z4-age"]},
@@ -56,12 +56,12 @@ function render(){
  $("detail-subtitle").textContent=m.controller+" · "+m.protocol+" · Live overview and available diagnostics";
  const vals=[
   ["Process / Communication state",status||"UNKNOWN"],
-  ["Moisture",textValue("z"+num+"-moisture",selected==="01"?"48%":selected==="06"?"52%":"N/A")],
-  ["Flow",textValue("z"+num+"-flow",selected==="01"?"21.3 L/min":selected==="06"?"0 L/min":"N/A")],
-  ["Valve",textValue("z"+num+"-valve",selected==="01"?"100%":selected==="06"?"0%":"N/A")]
+  [selected==="01"?"Tank level":"Moisture",selected==="01"?textValue("z1-tank"):textValue("z"+num+"-moisture",selected==="06"?"52%":"N/A")],
+  ["Flow",textValue("z"+num+"-flow",selected==="06"?"0 L/min":"N/A")],
+  ["Valve",textValue("z"+num+"-valve",selected==="06"?"0%":"N/A")]
  ];
  m.extra.forEach(id=>{
-  const labels={"z4-node":"Edge node","z4-age":"Last reading","z5-tank":"Tank level","z5-pump":"Pump state","z5-mode":"Operating mode"};
+  const labels={"z1-frequency":"Pump frequency","z1-pump":"Pump state","z1-mode":"Operating mode","z1-latch":"Operator STOP latch","z4-node":"Edge node","z4-age":"Last reading","z5-tank":"Tank level","z5-pump":"Pump state","z5-mode":"Operating mode"};
   vals.push([labels[id],textValue(id)]);
  });
  $("detail-grid").innerHTML=vals.map(v=>metric(v[0],v[1])).join("");
@@ -82,7 +82,7 @@ function render(){
  }).join("");
  $("detail-hint").textContent=items.length?
   "Commands use the existing zone-specific API and driver. Local PLC/device interlocks remain authoritative.":
-  "Demonstration placeholder: no live controller connection or operator command is configured for this zone.";
+  (selected==="01"?"Live process values and operator requests use the Python water-process simulator through Modbus TCP. Process interlocks are evaluated by the simulator.":"Demonstration placeholder: no live controller connection or operator command is configured for this zone.");
  document.querySelectorAll(".zone[data-zone]").forEach(card=>{
   const active=card.dataset.zone===selected;card.classList.toggle("is-selected",active);card.setAttribute("aria-pressed",String(active));
  });
