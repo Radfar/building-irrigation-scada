@@ -2,7 +2,7 @@
 "use strict";
 const $ = id => document.getElementById(id);
 const meta = {
- "01":{name:"Main Entrance",controller:"Python water-process simulator",protocol:"Modbus TCP",extra:["z1-frequency","z1-pump","z1-mode"]},
+ "01":{name:"Water Storage Tank",controller:"Python water-process simulator",protocol:"Modbus TCP",extra:["z1-frequency","z1-pump","z1-mode","z1-latch"]},
  "02":{name:"Courtyard",controller:"Rockwell Micro850",protocol:"EtherNet/IP",extra:[]},
  "03":{name:"Roof Garden",controller:"CODESYS SoftPLC",protocol:"OPC UA",extra:[]},
  "04":{name:"East Garden",controller:"ESP8266 IoT edge",protocol:"MQTT / Node-RED",extra:["z4-node","z4-age"]},
@@ -61,7 +61,7 @@ function render(){
   ["Valve",textValue("z"+num+"-valve",selected==="06"?"0%":"N/A")]
  ];
  m.extra.forEach(id=>{
-  const labels={"z1-frequency":"Pump frequency","z1-pump":"Pump state","z1-mode":"Operating mode","z4-node":"Edge node","z4-age":"Last reading","z5-tank":"Tank level","z5-pump":"Pump state","z5-mode":"Operating mode"};
+  const labels={"z1-frequency":"Pump frequency","z1-pump":"Pump state","z1-mode":"Operating mode","z1-latch":"Operator STOP latch","z4-node":"Edge node","z4-age":"Last reading","z5-tank":"Tank level","z5-pump":"Pump state","z5-mode":"Operating mode"};
   vals.push([labels[id],textValue(id)]);
  });
  $("detail-grid").innerHTML=vals.map(v=>metric(v[0],v[1])).join("");
