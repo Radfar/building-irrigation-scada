@@ -2,8 +2,9 @@
 
 A custom browser-based SCADA/HMI for an industrial water-management testbed. The project brings together different controller and edge technologies behind one web monitoring interface.
 
-The current implementation demonstrates four zone integrations:
+The current implementation demonstrates five zone integrations:
 
+- **Zone 01 — Water storage tank process:** Python process simulator exposed over Modbus TCP and polled by the Node.js driver.
 - **Zone 02 — Rockwell Micro850:** EtherNet/IP communication using a Node.js driver based on `st-ethernet-ip`.
 - **Zone 03 — CODESYS:** OPC UA communication with a CODESYS Control Win runtime.
 - **Zone 04 — IoT Edge:** ESP8266 telemetry and bidirectional mode commands over MQTT.
@@ -18,6 +19,7 @@ This is an engineering testbed. It is intended to explore controller integration
 ```mermaid
 flowchart TB
   subgraph FIELD["Field and control layer"]
+    Z1["Zone 01<br/>Python water-process simulator"]
     Z2["Zone 02<br/>Rockwell Micro850"]
     Z3["Zone 03<br/>CODESYS Control Win"]
     Z4["Zone 04<br/>ESP8266 soil node"]
@@ -25,6 +27,7 @@ flowchart TB
   end
 
   subgraph COMM["Communication layer"]
+    MOD["Modbus TCP"]
     EIP["EtherNet/IP"]
     OPC["OPC UA"]
     MQTT["MQTT / Mosquitto"]
@@ -37,10 +40,12 @@ flowchart TB
     DB[("PostgreSQL")]
   end
 
+  Z1 <-->|"Modbus TCP"| MOD
   Z2 <-->|"EtherNet/IP"| EIP
   Z3 <-->|"OPC UA"| OPC
   Z4 <-->|"MQTT telemetry, status and commands"| MQTT
   Z5 <-->|"BACnet/IP"| BAC
+  MOD <--> BE
   EIP <--> BE
   OPC <--> BE
   MQTT <--> BE
@@ -55,6 +60,7 @@ The backend acts as the integration layer between the controller-specific protoc
 
 | Zone | Technology | Integration | Current scope |
 |---|---|---|---|
+| Zone 01 | Python water-process simulator | Modbus TCP | Tank filling process, pump/valve model, live process values and whitelisted operator commands |
 | Zone 02 | Rockwell Micro850 | EtherNet/IP | Live tag polling and whitelisted Boolean commands through the Node.js driver |
 | Zone 03 | CODESYS Control Win | OPC UA | Live tag browsing and polling, operator commands and PLC-side process logic |
 | Zone 04 | ESP8266 | MQTT | Soil-moisture telemetry, device status, AUTO/MANUAL commands and acknowledgements |
@@ -70,6 +76,7 @@ The project also contains local process simulations. In particular, Zone 04 mois
 | Frontend | HTML5, CSS3, vanilla JavaScript |
 | Backend | Node.js, Express |
 | Database | PostgreSQL |
+| Zone 01 protocol | Modbus TCP |
 | Zone 02 protocol | EtherNet/IP |
 | Zone 03 protocol | OPC UA |
 | Zone 04 protocol | MQTT |
@@ -81,13 +88,14 @@ The project also contains local process simulations. In particular, Zone 04 mois
 ## Key capabilities
 
 - Multi-brand integration through separate protocol-specific backend drivers.
+- Zone 01 Modbus TCP polling, tank/pump process simulation and explicit operator STOP-latch / RE-ENABLE semantics.
 - Zone 02 Micro850 polling and controlled Boolean writes.
 - Zone 03 OPC UA tag discovery from the CODESYS `GVL_SCADA` variable group.
 - Zone 03 command whitelist, pulse handling for edge-triggered commands and server-side interlock messages.
 - Zone 04 MQTT telemetry ingestion directly by the Node.js backend.
 - MQTT device status and command-result acknowledgement handling.
 - UDP broker discovery for the Zone 04 ESP8266 on a shared IPv4 subnet.
-- Shared PostgreSQL historian persistence for selected observations from Zones 02–05.
+- Shared PostgreSQL historian persistence for selected observations from Zones 01–05.
 - Live data freshness handling, including `GOOD` and `UNCERTAIN` quality states.
 - REST endpoints that separate the browser HMI from industrial protocol details.
 - Zone 05 BACnet/IP polling, normalized observations and whitelisted AUTO/MANUAL/START/STOP/FAULT_RESET commands.
@@ -182,18 +190,19 @@ See the simulator README and its [learning journal](https://github.com/Radfar/ba
 
 ## Shared PostgreSQL historian
 
-The four zone integrations use a common historian writer and the existing PostgreSQL `tags` and `tag_values` tables. Protocol-specific drivers retain responsibility for acquisition; the shared service applies a consistent persistence contract and writes accepted observations to the same history table.
+The five zone integrations use a common historian writer and the existing PostgreSQL `tags` and `tag_values` tables. Protocol-specific drivers retain responsibility for acquisition; the shared service applies a consistent persistence contract and writes accepted observations to the same history table.
 
 ### Historian coverage
 
 | Zone | Source | Persisted tags | Acquisition / storage behavior |
 |---|---|---|---|
+| Zone 01 | Python simulator / Modbus TCP | `P01_FREQUENCY`, `P01_SPEED`, `P01_FLOW`, `P01_RUN_FEEDBACK`, `P01_FAULT`, `Z01_OPERATOR_STOP_LATCHED`, `T01_LEVEL`, `V01_POSITION` | Polled; sampled at the configured historian interval |
 | Zone 02 | Micro850 / EtherNet/IP | All 17 tags in the driver registry | Polled; sampled at the configured historian interval |
 | Zone 03 | CODESYS / OPC UA | `Z03_MOISTURE`, `Z03_FLOW`, `Z03_VALVE`, `Z03_FAULT`, `Z03_AUTO` | Selected allow-listed variables; sampled at the configured interval |
 | Zone 04 | ESP8266 / MQTT | `Z04_MOISTURE` | Event-driven; a validated moisture message is stored when received |
 | Zone 05 | BACnet/IP | Seven observations exposed by the BACnet driver | Polled; sampled at the configured historian interval |
 
-The default sampling interval for Zones 02, 03 and 05 is five seconds. Set `HISTORIAN_SAMPLE_INTERVAL_MS` to change it. Zone 04 remains event-driven and is not throttled by that interval.
+The default sampling interval for Zones 01, 02, 03 and 05 is five seconds. Set `HISTORIAN_SAMPLE_INTERVAL_MS` to change it. Zone 04 remains event-driven and is not throttled by that interval.
 
 The historian accepts only observations with `GOOD` quality and finite numeric or Boolean values. Boolean values are stored as `1` or `0` in the PostgreSQL `NUMERIC` value column. Source timestamps are preferred; received timestamps are used when the source does not provide one. A stale or disconnected source does not create repeated NULL history rows.
 
@@ -201,13 +210,14 @@ Zone 04 flow and valve indications are simulated process values, not physical me
 
 ### Database migration and verification
 
-After backing up the SCADA database, apply the registry migration once:
+After backing up the SCADA database, apply both registry migrations in chronological order:
 
 ```bash
 psql -h <DB_HOST> -p <DB_PORT> -U <DB_USER> -d <DB_NAME> -f database/migrations/2026-11-02_common_historian_registry.sql
+psql -h <DB_HOST> -p <DB_PORT> -U <DB_USER> -d <DB_NAME> -f database/migrations/2026-11-03_zone01_modbus_historian.sql
 ```
 
-The migration is designed to be safe to rerun. It registers Zone 02 and Zone 05 tags, corrects Zone 05 equipment ownership, and aligns Zone 02/05 flow units with the driver contract (`gpm`). Zone 03 flow remains in `L/min`.
+Both migrations are designed to be safe to rerun. The common registry migration registers Zone 02 and Zone 05 tags, corrects Zone 05 equipment ownership, and aligns Zone 02/05 flow units with the driver contract (`gpm`). The Zone 01 migration registers its eight pump, tank and valve observations, including the operator STOP latch. Zone 03 flow remains in `L/min`.
 
 For the complete coverage list, SQL verification query and implementation notes, see [docs/HISTORIAN.md](docs/HISTORIAN.md).
 
@@ -245,8 +255,14 @@ server/
   mqtt.js                    Zone 04 MQTT client and historian writes
   mqtt-discovery.js          UDP broker discovery responder
   zone04.js                  Zone 04 process simulation
+  historian/
+    historian.js             Shared PostgreSQL persistence service
   drivers/
+    modbus/zone01.js         Zone 01 Modbus TCP client
     micro800/zone02.js       Rockwell Micro850 driver
+    bacnet/zone05.js         Zone 05 BACnet/IP client
+simulators/
+  python-modbus-zone01/      Version-pinned Zone 01 Python simulator
 database/                    PostgreSQL schema and database assets
 PLC/                         PLC project assets
 docs/                        Implementation notes, media and test evidence
@@ -277,7 +293,7 @@ npm install
 
 ### 2. Configure PostgreSQL
 
-Create the `building_irrigation` database and apply the SQL schema in `database/schema.sql`. Configure the database connection using the environment variables read by `server/database.js`. Back up the database, then apply the historian registry migration: `database/migrations/2026-11-02_common_historian_registry.sql`.
+Create the `building_irrigation` database and apply the SQL schema in `database/schema.sql`. Configure the database connection using the environment variables read by `server/database.js`. Back up the database, then apply both historian registry migrations in order: `database/migrations/2026-11-02_common_historian_registry.sql` followed by `database/migrations/2026-11-03_zone01_modbus_historian.sql`.
 
 ### 3. Configure PLC and MQTT connections
 
