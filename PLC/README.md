@@ -35,3 +35,6 @@ Do not edit a reference snapshot and assume that the native PLC implementation h
 Zone03 source-reference status: **Recovered — not yet verified against the native CODESYS application.**
 
 No future zone, controller, or communication protocol is selected by this directory structure.
+
+
+The native CODESYS project file is intentionally not stored in this repository. The Zone 03 folder contains the available Structured Text and variable-list references; these remain reference material and are not represented as verified exports of the current native application.
