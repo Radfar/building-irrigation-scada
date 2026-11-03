@@ -18,7 +18,7 @@
     if (status) { status.textContent = "NO DATA"; status.className = "status alarm"; }
     ["z1-tank", "z1-flow", "z1-valve", "z1-frequency", "z1-pump", "z1-mode"]
       .forEach(id => { if ($(id)) $(id).textContent = "--"; });
-    ["z1-btn-start", "z1-btn-stop", "z1-btn-mode", "z1-btn-reset"]
+    ["z1-btn-start", "z1-btn-stop", "z1-btn-mode", "z1-btn-reset", "z1-btn-reenable"]
       .forEach(id => { if ($(id)) $(id).disabled = true; });
     if ($("z1-bar")) $("z1-bar").style.width = "0%";
   }
