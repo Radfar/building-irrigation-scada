@@ -16,7 +16,7 @@
     snapshot = null;
     const status = $("z1-status");
     if (status) { status.textContent = "NO DATA"; status.className = "status alarm"; }
-    ["z1-tank", "z1-flow", "z1-valve", "z1-frequency", "z1-pump", "z1-mode"]
+    ["z1-tank", "z1-flow", "z1-valve", "z1-frequency", "z1-pump", "z1-mode", "z1-latch"]
       .forEach(id => { if ($(id)) $(id).textContent = "--"; });
     ["z1-btn-start", "z1-btn-stop", "z1-btn-mode", "z1-btn-reset", "z1-btn-reenable"]
       .forEach(id => { if ($(id)) $(id).disabled = true; });
@@ -30,6 +30,7 @@
     const running = Boolean(v.running);
     const fault = Boolean(v.fault);
     const auto = Boolean(v.auto);
+    const stopLatched = Boolean(v.operatorStopLatched);
     const status = $("z1-status");
     if (status) {
       status.textContent = fault ? "FAULT" : running ? "RUNNING" : "STANDBY";
@@ -41,12 +42,14 @@
     $("z1-frequency").textContent = fmt(v.pumpFrequency, 1, " Hz");
     $("z1-pump").textContent = fault ? "FAULT" : running ? "RUNNING" : "STOPPED";
     $("z1-mode").textContent = auto ? "AUTO" : "MANUAL";
+    $("z1-latch").textContent = stopLatched ? "ACTIVE" : "CLEAR";
     $("z1-bar").style.width = Math.max(0, Math.min(100, Number(v.tankLevel) || 0)) + "%";
-    $("z1-btn-start").disabled = pending || auto || running || fault || !v.permissive;
-    $("z1-btn-stop").disabled = pending || !running;
+    $("z1-btn-start").disabled = pending || auto || running || fault || !v.permissive || stopLatched;
+    $("z1-btn-stop").disabled = pending;
     $("z1-btn-mode").disabled = pending;
     $("z1-btn-mode").textContent = auto ? "AUTO" : "MANUAL";
     $("z1-btn-reset").disabled = pending || !fault;
+    $("z1-btn-reenable").disabled = pending || !stopLatched;
   }
 
   async function refresh() {
@@ -63,7 +66,7 @@
   async function command(name) {
     if (pending) return;
     pending = true;
-    ["z1-btn-start", "z1-btn-stop", "z1-btn-mode", "z1-btn-reset"]
+    ["z1-btn-start", "z1-btn-stop", "z1-btn-mode", "z1-btn-reset", "z1-btn-reenable"]
       .forEach(id => { if ($(id)) $(id).disabled = true; });
     try {
       const response = await fetch(API + "/api/zone01/command", {
