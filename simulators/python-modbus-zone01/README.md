@@ -24,6 +24,7 @@ The 500 ms nominal runtime scan connects the command processor, water-process mo
 
 - Python 3.15.2 (initial development environment)
 - PyModbus 3.16.1
+- PySide6 (desktop GUI)
 
 ## Setup
 
@@ -41,6 +42,22 @@ Install dependencies:
 ```powershell
 python -m pip install -r requirements.txt
 ```
+
+## Run the simulator GUI
+
+The PySide6 desktop GUI can start and stop the Python Modbus server, monitor the live process over Modbus TCP, display process measurements and status, and write operator commands and setpoints.
+
+From this directory, with the virtual environment active:
+
+```powershell
+python -m gui.main
+```
+
+Use **Start Simulator** to launch the server as a child process. The GUI then connects to `127.0.0.1:1502` as Unit ID 1. Use **Stop Simulator** to terminate the child process. Closing the GUI also requests simulator shutdown.
+
+The GUI is a Modbus TCP client. It does not access or duplicate the process model directly. The Web SCADA remains an independent Modbus TCP client of the same simulator.
+
+The GUI polls the four Modbus data areas every 500 ms. Commands are written to the documented coil offsets, and setpoints are written to holding registers using the ×10 scaling convention. A successful write indicates Modbus write acceptance; observe status and process feedback to confirm the simulated response.
 
 ## Run the simulator
 
@@ -131,7 +148,7 @@ industrial-water-modbus-simulator/
 4. Runtime integration and dynamic Modbus updates — implemented; local verification pending.
 5. Verify live Modbus behavior with a client.
 6. Connect the simulator to the Node.js Web SCADA and Ignition as independent Modbus TCP clients.
-7. Expand the process model with additional equipment behavior and diagnostics as the testbed evolves.
+7. Provide a PySide6 desktop GUI for local simulator operation and Modbus monitoring — initial implementation added; local GUI validation pending.\n8. Expand the process model with additional equipment behavior and diagnostics as the testbed evolves.
 
 ## Engineering notes
 
