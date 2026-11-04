@@ -22,7 +22,7 @@ function render(degraded) {
     $('z2-valve').textContent    = fmt('Z02_VALVE', 0);
     $('z2-bar').style.width      = Math.max(0, Math.min(100, m || 0)) + '%';
 
-    if (degraded)             setStatus('NO DATA', 'warn');
+    if (degraded)             setStatus('NO DATA', 'no-data');
     else if (z2.Z02_FAULT)    setStatus('FAULT', 'alarm');
     else if (z2.Z02_RUNNING)  setStatus('RUNNING', 'ok');
     else                      setStatus('STANDBY', 'ok');
@@ -43,7 +43,7 @@ function render(degraded) {
       u2 = Object.fromEntries(obs.map(o => [o.tagName, o.engineeringUnit ?? '']));
       render(obs.some(o => o.quality !== 'GOOD'));
     } catch {
-      setStatus('NO DATA', 'warn');
+      setStatus('NO DATA', 'no-data');
     }
   }
 
