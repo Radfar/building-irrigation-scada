@@ -341,6 +341,22 @@ Check the API health endpoint at `http://localhost:3000/api`.
 
 Zone 01 models a water storage tank filling process using a pump and valve. The canonical simulator source is maintained in [Radfar/industrial-water-modbus-simulator](https://github.com/Radfar/industrial-water-modbus-simulator). A version-pinned integration copy is included at `simulators/python-modbus-zone01/` for reproducible Web SCADA development. Develop simulator logic in the standalone repository first, then synchronize the integration copy deliberately.
 
+### Optional PySide6 desktop GUI
+
+The Zone 01 simulator also includes a PySide6 desktop application in the standalone simulator project. The same GUI source is maintained in this integration copy for reproducible Web SCADA development.
+
+From the Web SCADA repository root:
+
+```powershell
+cd simulators/python-modbus-zone01
+python -m pip install -r requirements.txt
+python -m gui.main
+```
+
+The GUI starts and manages the Python Modbus server as a child process, then monitors and controls it through Modbus TCP at `127.0.0.1:1502`, Unit ID 1. Do not start `python -m src.main` separately when using this GUI-managed mode. Closing the GUI requests simulator shutdown.
+
+The desktop GUI and Web SCADA are independent Modbus TCP clients. They can connect to the same running simulator; the simulator remains the authoritative process model. The GUI provides local engineering/test monitoring and is not a safety-rated operator station.
+
 ### Start the simulator
 
 Open a terminal in the Web SCADA repository root:
