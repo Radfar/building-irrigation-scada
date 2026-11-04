@@ -1,6 +1,7 @@
 """Custom graphical process overview widgets."""
 
-from PySide6.QtCore import Qt, QRectF
+from PySide6.QtCore import Qt, QRectF, QPointF
+from PySide6.QtGui import QPolygonF
 from PySide6.QtGui import QColor, QPainter, QPen, QBrush, QFont
 from PySide6.QtWidgets import QWidget
 
@@ -29,7 +30,7 @@ class ProcessGraphic(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.fillRect(self.rect(), QColor("#111827") if self.palette().color(self.backgroundRole()).lightness() < 128 else QColor("#f4f7fb"))
-        dark = self.palette().color(self.backgroundRole()).lightness() < 128
+        dark = True
         foreground = QColor("#e5edf7") if dark else QColor("#243247")
         muted = QColor("#94a3b8") if dark else QColor("#64748b")
         pipe = QColor("#64748b")
@@ -73,7 +74,7 @@ class ProcessGraphic(QWidget):
         valve_color = ok if self.valve > 0 else muted
         painter.setPen(QPen(valve_color, 3))
         painter.setBrush(Qt.BrushStyle.NoBrush)
-        painter.drawPolygon([(535, 70), (555, 85), (535, 100), (515, 85)])
+        painter.drawPolygon(QPolygonF([QPointF(535, 70), QPointF(555, 85), QPointF(535, 100), QPointF(515, 85)]))
         painter.drawLine(535, 70, 535, 100)
         painter.setPen(QPen(foreground, 1))
         painter.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
