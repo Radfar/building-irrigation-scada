@@ -12,13 +12,89 @@
   const fmt = (value, digits = 1, unit = "") =>
     Number.isFinite(Number(value)) ? Number(value).toFixed(digits) + unit : "--";
 
+  function syncTankPageUnavailable() {
+    ["wt-tank-level", "wt-flow", "wt-valve", "wt-frequency", "wt-pump", "wt-mode", "wt-permissive", "wt-fault", "wt-latch", "wt-quality"]
+      .forEach(id => { if ($(id)) $(id).textContent = "--"; });
+    const status = $("wt-status");
+    const comm = $("wt-comm");
+    if (status) { status.textContent = "NO DATA"; status.className = "status no-data"; }
+    if (comm) { comm.textContent = "COMMUNICATION: NO DATA"; comm.className = "status no-data"; }
+    if ($("wt-tank-bar")) $("wt-tank-bar").style.width = "0%";
+    if ($("wt-tank-liquid")) { $("wt-tank-liquid").setAttribute("y", "168"); $("wt-tank-liquid").setAttribute("height", "0"); }
+    ["wt-schematic-level", "wt-schematic-pump-state", "wt-schematic-valve", "wt-schematic-flow"].forEach(id => { if ($(id)) $(id).textContent = "--"; });
+    if ($("wt-flow-line")) $("wt-flow-line").classList.remove("is-running");
+    if ($("wt-schematic-pump")) $("wt-schematic-pump").classList.remove("is-running", "is-fault");
+    ["wt-btn-start", "wt-btn-stop", "wt-btn-mode", "wt-btn-reset", "wt-btn-reenable"]
+      .forEach(id => { if ($(id)) $(id).disabled = true; });
+  }
+
+  function syncTankPage(data) {
+    const v = data.values;
+    const running = Boolean(v.running);
+    const fault = Boolean(v.fault);
+    const auto = Boolean(v.auto);
+    const stopLatched = Boolean(v.operatorStopLatched);
+    const level = Number(v.tankLevel);
+    const status = $("wt-status");
+    const comm = $("wt-comm");
+    const stateText = fault ? "FAULT" : running ? "RUNNING" : "STANDBY";
+    if (status) {
+      status.textContent = stateText;
+      status.className = "status " + (fault ? "alarm" : running ? "ok" : "warn");
+    }
+    if (comm) {
+      comm.textContent = "COMMUNICATION: GOOD";
+      comm.className = "status ok";
+    }
+    const values = {
+      "wt-tank-level": fmt(level, 1),
+      "wt-flow": fmt(v.flow, 1, " L/min"),
+      "wt-valve": fmt(v.valvePosition, 0, "%"),
+      "wt-frequency": fmt(v.pumpFrequency, 1, " Hz"),
+      "wt-pump": fault ? "FAULT" : running ? "RUNNING" : "STOPPED",
+      "wt-mode": auto ? "AUTO" : "MANUAL",
+      "wt-permissive": v.permissive ? "SATISFIED" : "NOT SATISFIED",
+      "wt-fault": fault ? "ACTIVE" : "CLEAR",
+      "wt-latch": stopLatched ? "ACTIVE" : "CLEAR",
+      "wt-quality": data.quality || "UNKNOWN"
+    };
+    Object.entries(values).forEach(([id, value]) => { if ($(id)) $(id).textContent = value; });
+    const levelPct = Math.max(0, Math.min(100, Number.isFinite(level) ? level : 0));
+    if ($("wt-tank-bar")) $("wt-tank-bar").style.width = levelPct + "%";
+    if ($("wt-tank-liquid")) {
+      const liquidHeight = 132 * levelPct / 100;
+      $("wt-tank-liquid").setAttribute("height", liquidHeight.toFixed(1));
+      $("wt-tank-liquid").setAttribute("y", (168 - liquidHeight).toFixed(1));
+    }
+    if ($("wt-schematic-level")) $("wt-schematic-level").textContent = fmt(level, 1, " %");
+    if ($("wt-schematic-pump-state")) $("wt-schematic-pump-state").textContent = fault ? "FAULT" : running ? "RUNNING" : "STOPPED";
+    if ($("wt-schematic-valve")) $("wt-schematic-valve").textContent = fmt(v.valvePosition, 0, "%");
+    if ($("wt-schematic-flow")) $("wt-schematic-flow").textContent = fmt(v.flow, 1, " L/min");
+    if ($("wt-flow-line")) $("wt-flow-line").classList.toggle("is-running", running && !fault);
+    if ($("wt-schematic-pump")) {
+      $("wt-schematic-pump").classList.toggle("is-running", running && !fault);
+      $("wt-schematic-pump").classList.toggle("is-fault", fault);
+    }
+    const enabled = {
+      "wt-btn-start": !(pending || auto || running || fault || !v.permissive || stopLatched),
+      "wt-btn-stop": !pending,
+      "wt-btn-mode": !pending,
+      "wt-btn-reset": !(pending || !fault),
+      "wt-btn-reenable": !(pending || !stopLatched)
+    };
+    Object.entries(enabled).forEach(([id, value]) => { if ($(id)) $(id).disabled = !value; });
+    if ($("wt-btn-mode")) $("wt-btn-mode").textContent = auto ? "AUTO" : "MANUAL";
+  }
+
   function renderUnavailable() {
     snapshot = null;
+    syncTankPageUnavailable();
     const status = $("z1-status");
-    if (status) { status.textContent = "NO DATA"; status.className = "status alarm"; }
+    if (status) { status.textContent = "NO DATA"; status.className = "status no-data"; }
     ["z1-tank", "z1-flow", "z1-valve", "z1-frequency", "z1-pump", "z1-mode", "z1-latch"]
       .forEach(id => { if ($(id)) $(id).textContent = "--"; });
-    ["z1-btn-start", "z1-btn-stop", "z1-btn-mode", "z1-btn-reset", "z1-btn-reenable"]
+    ["z1-btn-start", "z1-btn-stop", "z1-btn-mode", "z1-btn-reset", "z1-btn-reenable",
+     "wt-btn-start", "wt-btn-stop", "wt-btn-mode", "wt-btn-reset", "wt-btn-reenable"]
       .forEach(id => { if ($(id)) $(id).disabled = true; });
     if ($("z1-bar")) $("z1-bar").style.width = "0%";
   }
@@ -26,6 +102,7 @@
   function render(data) {
     if (!data || data.quality !== "GOOD") { renderUnavailable(); return; }
     snapshot = data;
+    syncTankPage(data);
     const v = data.values;
     const running = Boolean(v.running);
     const fault = Boolean(v.fault);
@@ -66,7 +143,8 @@
   async function command(name) {
     if (pending) return;
     pending = true;
-    ["z1-btn-start", "z1-btn-stop", "z1-btn-mode", "z1-btn-reset", "z1-btn-reenable"]
+    ["z1-btn-start", "z1-btn-stop", "z1-btn-mode", "z1-btn-reset", "z1-btn-reenable",
+     "wt-btn-start", "wt-btn-stop", "wt-btn-mode", "wt-btn-reset", "wt-btn-reenable"]
       .forEach(id => { if ($(id)) $(id).disabled = true; });
     try {
       const response = await fetch(API + "/api/zone01/command", {

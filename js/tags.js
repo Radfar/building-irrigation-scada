@@ -566,7 +566,7 @@ async function updateZone3() {
     }
     catch (error) {
         badge.textContent = "NO DATA";
-        badge.className   = "status alarm";
+        badge.className   = "status no-data";
         updateZone3Buttons(null);
     }
 }
@@ -675,15 +675,17 @@ async function updateZone4() {
         badge.textContent = z.status || "NO DATA";
         badge.className = z.status === "RUNNING"
             ? "status ok"
-            : z.status === "FAULT" || z.status === "NO DATA"
-                ? "status alarm"
+            : z.status === "NO DATA"
+                ? "status no-data"
+                : z.status === "FAULT"
+                    ? "status alarm"
                 : "status warn";
 
         updateZone4Buttons(z);
     }
     catch (error) {
         badge.textContent = "NO DATA";
-        badge.className = "status alarm";
+        badge.className = "status no-data";
         if (moisture) moisture.textContent = "--";
         if (flow) flow.textContent = "--";
         if (valve) valve.textContent = "--";

@@ -1562,7 +1562,7 @@
         :root { color-scheme:dark; --surface-raised:#1b2b43; --surface-soft:#0d192a; --header-bg:rgba(10,20,35,.96); }
         body[data-theme="light"] {
             color-scheme:light; --bg:#edf2f7; --panel:#fff; --panel-2:#f4f7fb; --panel-3:#e8eef5;
-            --border:#d4deea; --border-light:#c2cfdd; --text:#172b45; --muted:#60738b;
+            --border:#b8c7d8; --border-light:#a8b9cc; --text:#172b45; --muted:#526982;
             --surface-raised:#fff; --surface-soft:#eaf0f6; --header-bg:rgba(255,255,255,.97);
             background:radial-gradient(circle at top right,#e1edf8 0,var(--bg) 42%);
         }
@@ -1581,8 +1581,76 @@
         body[data-theme="light"] .faceplate-overlay { background:rgba(20,35,55,.25); }
         body[data-theme="light"] .faceplate-footer, body[data-theme="light"] footer { color:var(--muted); }
         body[data-theme="light"] .close-button:hover { background:#e6edf5;color:#172b45; }
-        .theme-toggle { display:inline-flex;align-items:center;gap:7px;padding:8px 11px;font-size:11px;white-space:nowrap; }
-        .zone { min-height:174px;display:flex;flex-direction:column;cursor:pointer;transition:border-color .16s,box-shadow .16s,transform .16s; }
+        .theme-toggle { display:inline-flex;align-items:center;gap:7px;padding:8px 11px;font-size:12px;font-weight:700;white-space:nowrap; }
+        .sidebar-theme-toggle { width:100%;justify-content:flex-start;margin:5px 0 12px;padding:9px 12px;border-color:var(--border-light); }
+        .zone { min-height:174px;display:flex;flex-direction:column;cursor:pointer;border-width:2px;transition:border-color .16s,box-shadow .16s,transform .16s; }
+        .zone-name { font-size:13px;font-weight:700; }
+        .zone .status { font-size:10px;font-weight:750; }
+        .zone .metric { font-size:11px;font-weight:600; }
+        .zone .metric strong { font-size:15px;font-weight:750; }
+        .zone-device { font-size:11px;font-weight:600; }
+        .protocol-chip { font-size:10px;font-weight:750; }
+        body[data-theme="light"] .zone { border-color:#a8b9cc; }
+        body[data-theme="light"] .zone:hover, body[data-theme="light"] .zone.is-selected { border-color:#477da9; }
+        .no-data { color:#ffd0d7;background:#5b1728;border:1px solid #8b3447; }
+        body[data-theme="light"] .no-data { color:#8b1e32;background:#f8dfe4;border-color:#d99aa7; }
+        /* Settings dropdown menu */
+        .settings-menu-wrap { position:relative; }
+        .menu-caret { float:right;font-size:11px;opacity:.8; }
+        .settings-menu { position:absolute;left:8px;top:calc(100% - 1px);z-index:50;width:190px;padding:10px;background:var(--panel);border:1px solid var(--border-light);border-radius:9px;box-shadow:0 14px 32px rgba(0,0,0,.28); }
+        .settings-menu[hidden] { display:none !important; }
+        .settings-menu-title { padding:3px 5px 8px;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase; }
+        .settings-menu button { width:100%;justify-content:flex-start; }
+        body[data-theme="light"] .settings-menu { background:#fff;border:1px solid #71869d;box-shadow:0 14px 30px rgba(35,55,75,.2); }
+        /* Higher-contrast zone-card outlines in both themes */
+        .zone { border:2.5px solid #657d98;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035); }
+        body[data-theme="light"] .zone { border:2.5px solid #71869d;box-shadow:0 1px 3px rgba(27,48,70,.10); }
+        body[data-theme="light"] .zone:hover, body[data-theme="light"] .zone.is-selected { border-color:#245b8d;box-shadow:0 0 0 2px rgba(36,91,141,.16),0 5px 16px rgba(27,48,70,.12); }
+        .zone:hover { border-color:#75b8f5; }
+        .zone.is-selected { border-color:var(--cyan); }
+
+        /* Water Tank process schematic */
+        .tank-schematic-card { grid-column:1 / -1; }
+        .tank-schematic-wrap { width:100%;overflow:hidden; }
+        .tank-schematic { display:block;width:100%;height:auto;max-height:250px; }
+        .schematic-pipe { fill:none;stroke:#71869d;stroke-width:8;stroke-linecap:round; }
+        .schematic-flow { fill:none;stroke:#42c8d5;stroke-width:4;stroke-linecap:round;stroke-dasharray:9 10;opacity:0; }
+        .schematic-flow.is-running { opacity:1;animation:wt-flow-pulse 1s linear infinite; }
+        @keyframes wt-flow-pulse { to { stroke-dashoffset:-38; } }
+        .schematic-tank-shell { fill:var(--panel-2);stroke:#7890aa;stroke-width:3; }
+        .schematic-water { fill:url(#wt-water-gradient); }
+        .tank-schematic defs { --water-a:#2594cf; }
+        .schematic-tank-rim { fill:none;stroke:#9bb0c6;stroke-width:3; }
+        .schematic-mark { fill:none;stroke:#9bb0c6;stroke-width:2; }
+        .schematic-label { fill:var(--muted);font-size:11px;font-weight:800;letter-spacing:.04em; }
+        .schematic-value { fill:var(--text);font-size:12px;font-weight:800; }
+        .schematic-caption { fill:var(--muted);font-size:10px;font-weight:600; }
+        .schematic-pump { fill:var(--panel-2);stroke:#7890aa;stroke-width:3; }
+        .schematic-pump.is-running { fill:rgba(38,166,120,.16);stroke:#2aa879; }
+        .schematic-pump.is-fault { fill:rgba(190,54,77,.16);stroke:#c34b60; }
+        .schematic-pump-blade { fill:#42c8d5; }
+        .schematic-valve { fill:var(--panel-2);stroke:#7890aa;stroke-width:3;stroke-linejoin:round; }
+        .schematic-valve-stem { fill:none;stroke:#9bb0c6;stroke-width:3;stroke-linecap:round; }
+        body[data-theme="light"] .schematic-tank-shell, body[data-theme="light"] .schematic-pump, body[data-theme="light"] .schematic-valve { fill:#f3f7fb; }
+        body[data-theme="light"] .schematic-pipe { stroke:#8296aa; }
+        @media(max-width:600px){.tank-schematic{min-width:460px}.tank-schematic-wrap{overflow-x:auto}}
+
+        /* Water Tank process page */
+        #water-tank-page[hidden], #overview-page[hidden] { display:none !important; }
+        .tank-page-grid { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:14px; }
+        .tank-level-card { min-height:220px; }
+        .tank-level-reading { margin:22px 0 14px;color:var(--text);font-size:56px;font-weight:800;letter-spacing:-.04em; }
+        .tank-level-reading span { color:var(--muted);font-size:24px;font-weight:700; }
+        .tank-level-track { height:18px;background:#263b55;border:1px solid #506985;border-radius:20px;overflow:hidden; }
+        .tank-level-track span { display:block;width:0;height:100%;background:linear-gradient(90deg,#2585c7,#35c7d0);transition:width .3s ease; }
+        .tank-level-caption { margin-top:10px;color:var(--muted);font-size:11px;font-weight:600; }
+        .tank-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        .tank-actions { margin-top:18px; }
+        .tank-actions button { min-height:42px;font-size:11px;font-weight:750; }
+        body[data-theme="light"] .tank-level-track { background:#d8e3ee;border-color:#8096ad; }
+        @media(max-width:900px){.tank-page-grid{grid-template-columns:1fr}}
+
+        .sidebar-theme-toggle:focus-visible { outline:2px solid var(--blue);outline-offset:2px; }
         .zone:hover { border-color:var(--blue);transform:translateY(-1px); }
         .zone.is-selected { border-color:var(--cyan);box-shadow:0 0 0 2px rgba(68,215,232,.18),0 8px 24px rgba(0,0,0,.12); }
         .zone[data-zone="01"] .bar + .zone-data { display:none; }
@@ -1612,6 +1680,13 @@
         .detail-hint { color:var(--muted);font-size:9px;line-height:1.5;margin-top:10px; }
         @media(max-width:900px){.detail-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
         @media(max-width:700px){header{padding:0 14px;gap:10px}.top-status{gap:9px}.theme-toggle{padding:7px 8px}.content{padding:15px}}
+
+    
+        /* Zone card technology identity (separate from process status) */
+        .zone-identity { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;min-width:0; }
+        .zone-device { color:var(--muted);font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+        .protocol-chip { flex:0 0 auto;padding:4px 7px;border:1px solid rgba(88,166,255,.28);border-radius:5px;background:rgba(88,166,255,.10);color:var(--blue);font-size:10px;font-weight:750;letter-spacing:.02em;white-space:nowrap; }
+        body[data-theme="light"] .protocol-chip { background:#e8f2fc;border-color:#c5d9ed;color:#245b8d; }
 
     </style>
 
@@ -1647,8 +1722,6 @@
 
     </div>
 
-
-    <button id="theme-toggle" class="theme-toggle" type="button">☀ Light mode</button>
 
     <div class="top-status">
 
@@ -1692,12 +1765,12 @@
         </div>
 
 
-        <div class="nav active">
+        <div class="nav active" data-page="overview" role="button" tabindex="0">
             ● Site Overview
         </div>
 
 
-        <div class="nav">
+        <div class="nav" data-page="overview" role="button" tabindex="0">
             ▣ Irrigation Zones
         </div>
 
@@ -1710,7 +1783,7 @@
         </div>
 
 
-        <div class="nav">
+        <div class="nav" data-page="water-tank" role="button" tabindex="0">
             ≈ Water Tank
         </div>
 
@@ -1725,8 +1798,14 @@
         </div>
 
 
-        <div class="nav">
-            ⚙ Settings
+        <div class="settings-menu-wrap">
+            <div class="nav" id="settings-menu-toggle" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">
+                ⚙ Settings <span class="menu-caret">▾</span>
+            </div>
+            <div id="settings-menu" class="settings-menu" hidden>
+                <div class="settings-menu-title">Appearance</div>
+                <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle display theme">☀ Light mode</button>
+            </div>
         </div>
 
 
@@ -1758,6 +1837,7 @@
     ============================================================= -->
 
     <section class="content">
+        <div id="overview-page">
 
 
         <!-- PAGE TITLE -->
@@ -1976,7 +2056,7 @@
 
     <div class="zone-head">
         <span class="zone-name">Zone 02 • Courtyard</span>
-        <span id="z2-status" class="status warn">NO DATA</span>
+        <span id="z2-status" class="status no-data">NO DATA</span>
     </div>
 
     <div class="zone-data">
@@ -2001,7 +2081,7 @@
 
     <div class="zone-head">
         <span class="zone-name">Zone 03 • Roof Garden</span>
-        <span id="z3-status" class="status warn">NO DATA</span>
+        <span id="z3-status" class="status no-data">NO DATA</span>
     </div>
 
     <div class="zone-data">
@@ -2037,7 +2117,7 @@
 
     <div class="zone-head">
         <span class="zone-name">Zone 04 • East Garden</span>
-        <span id="z4-status" class="status warn">NO DATA</span>
+        <span id="z4-status" class="status no-data">NO DATA</span>
     </div>
 
     <div class="zone-data">
@@ -2241,7 +2321,7 @@
             <div>
 
                 <div class="card zone-details" id="zone-details-panel" aria-live="polite">
-                    <div class="section-head"><h3 id="detail-title">Zone 02 • Courtyard</h3><span id="detail-status" class="status warn">NO DATA</span></div>
+                    <div class="section-head"><h3 id="detail-title">Zone 02 • Courtyard</h3><span id="detail-status" class="status no-data">NO DATA</span></div>
                     <p class="detail-intro" id="detail-subtitle">Select a zone card to inspect its controller, protocol and process values.</p>
                     <div class="detail-grid" id="detail-grid"></div><div class="detail-actions" id="detail-actions"></div>
                     <div class="detail-hint" id="detail-hint">Selecting a zone only opens its details. It does not issue a process command.</div>
@@ -2532,6 +2612,102 @@
             No physical equipment is connected.
 
         </footer>
+        </div>
+
+        <!-- WATER TANK PAGE: live Zone 01 process and operator interface -->
+        <div id="water-tank-page" hidden>
+            <div class="page-title">
+                <div>
+                    <h2>Water Tank</h2>
+                    <p>Zone 01 · Water storage and pump process · Python simulator / Modbus TCP</p>
+                </div>
+                <span id="wt-status" class="status no-data">NO DATA</span>
+            </div>
+
+            <div class="tank-page-grid">
+                <div class="card tank-schematic-card">
+                    <div class="section-head">
+                        <h3>Water Transfer Process</h3>
+                        <span class="kpi-label">T-01 → P-01 → V-01</span>
+                    </div>
+                    <div class="tank-schematic-wrap">
+                        <svg class="tank-schematic" viewBox="0 0 560 220" role="img" aria-label="Water tank connected to pump and outlet valve">
+                            <defs>
+                                <linearGradient id="wt-water-gradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#42c8d5"/>
+                                    <stop offset="100%" stop-color="#1976b9"/>
+                                </linearGradient>
+                                <clipPath id="wt-tank-clip"><rect x="42" y="36" width="104" height="132" rx="13"/></clipPath>
+                            </defs>
+                            <path class="schematic-pipe" d="M146 104 H226 M286 104 H385 M425 104 H510"/>
+                            <path id="wt-flow-line" class="schematic-flow" d="M146 104 H226 M286 104 H385 M425 104 H510"/>
+                            <rect class="schematic-tank-shell" x="38" y="32" width="112" height="140" rx="16"/>
+                            <rect id="wt-tank-liquid" class="schematic-water" x="42" y="168" width="104" height="0" clip-path="url(#wt-tank-clip)"/>
+                            <path class="schematic-tank-rim" d="M38 48 Q94 24 150 48"/>
+                            <path class="schematic-mark" d="M150 68 H160 M150 100 H160 M150 132 H160"/>
+                            <text class="schematic-label" x="94" y="20" text-anchor="middle">T-01 · STORAGE TANK</text>
+                            <text id="wt-schematic-level" class="schematic-value" x="94" y="195" text-anchor="middle">-- %</text>
+                            <circle id="wt-schematic-pump" class="schematic-pump" cx="256" cy="104" r="30"/>
+                            <path class="schematic-pump-blade" d="M245 91 L269 104 L245 117 Z"/>
+                            <text class="schematic-label" x="256" y="57" text-anchor="middle">P-01 · PUMP</text>
+                            <text id="wt-schematic-pump-state" class="schematic-value" x="256" y="158" text-anchor="middle">--</text>
+                            <path class="schematic-valve" d="M385 88 L405 104 L385 120 Z M425 88 L405 104 L425 120 Z"/>
+                            <path class="schematic-valve-stem" d="M405 88 V70 M393 70 H417"/>
+                            <text class="schematic-label" x="405" y="48" text-anchor="middle">V-01 · OUTLET</text>
+                            <text id="wt-schematic-valve" class="schematic-value" x="405" y="158" text-anchor="middle">--</text>
+                            <text id="wt-schematic-flow" class="schematic-value" x="470" y="137" text-anchor="middle">-- L/min</text>
+                            <text class="schematic-caption" x="280" y="210" text-anchor="middle">Illustrative process schematic · live Zone 01 values</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="card tank-level-card">
+                    <div class="section-head">
+                        <h3>Tank Level</h3>
+                        <span id="wt-comm" class="status no-data">COMMUNICATION: NO DATA</span>
+                    </div>
+                    <div class="tank-level-reading"><strong id="wt-tank-level">--</strong><span> %</span></div>
+                    <div class="tank-level-track"><span id="wt-tank-bar"></span></div>
+                    <div class="tank-level-caption">Live level measurement · Zone 01</div>
+                </div>
+
+                <div class="card">
+                    <div class="section-head"><h3>Process Measurements</h3><span class="kpi-label">Live values</span></div>
+                    <div class="detail-grid tank-metrics">
+                        <div class="detail-item"><span>Water flow</span><strong id="wt-flow">--</strong></div>
+                        <div class="detail-item"><span>Outlet valve position</span><strong id="wt-valve">--</strong></div>
+                        <div class="detail-item"><span>Pump frequency</span><strong id="wt-frequency">--</strong></div>
+                        <div class="detail-item"><span>Pump state</span><strong id="wt-pump">--</strong></div>
+                        <div class="detail-item"><span>Operating mode</span><strong id="wt-mode">--</strong></div>
+                        <div class="detail-item"><span>Process permissive</span><strong id="wt-permissive">--</strong></div>
+                        <div class="detail-item"><span>Pump fault</span><strong id="wt-fault">--</strong></div>
+                        <div class="detail-item"><span>Operator STOP latch</span><strong id="wt-latch">--</strong></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="section-head"><h3>Pump & Process Control</h3><span class="kpi-label">Zone 01 commands</span></div>
+                    <div class="detail-actions tank-actions">
+                        <button id="wt-btn-start" onclick="zone1Command('start')" disabled>▶ Start</button>
+                        <button id="wt-btn-stop" onclick="zone1Command('stop')" disabled>■ Stop</button>
+                        <button id="wt-btn-mode" onclick="zone1ToggleMode()" disabled>--</button>
+                        <button id="wt-btn-reset" onclick="zone1Command('faultreset')" disabled>Fault reset</button>
+                        <button id="wt-btn-reenable" onclick="zone1Command('reenable')" disabled>Re-enable</button>
+                    </div>
+                    <p class="detail-hint">Commands are sent through the Zone 01 REST endpoint to the Node.js Modbus TCP driver and Python process simulator. Simulator interlocks and STOP-latch logic remain authoritative.</p>
+                </div>
+
+                <div class="card">
+                    <div class="section-head"><h3>Communication & Device</h3><span class="protocol-chip">MODBUS TCP</span></div>
+                    <div class="detail-grid tank-metrics">
+                        <div class="detail-item"><span>Data quality</span><strong id="wt-quality">--</strong></div>
+                        <div class="detail-item"><span>Controller / process source</span><strong>Python water-process simulator</strong></div>
+                        <div class="detail-item"><span>Interface</span><strong>Node.js REST API → Modbus TCP</strong></div>
+                        <div class="detail-item"><span>Zone identity</span><strong>Zone 01 · Water Storage Tank</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </section>
 
@@ -2809,6 +2985,7 @@
 <script src="js/zone02.js"></script>
 <script src="js/zone05.js"></script>
 <script src="js/zone01.js"></script>
+<script src="js/zone-protocol-labels.js"></script>
 <script src="js/hmi-ui.js"></script>
 </body>
 
