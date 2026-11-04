@@ -42,6 +42,22 @@ Install dependencies:
 python -m pip install -r requirements.txt
 ```
 
+## Run the simulator GUI
+
+The PySide6 desktop GUI can start and stop the Python Modbus server, monitor the live process over Modbus TCP, display process measurements and status, and write operator commands and setpoints.
+
+From this directory, with the virtual environment active:
+
+```powershell
+python -m gui.main
+```
+
+Use **Start Simulator** to launch the server as a child process. The GUI then connects to `127.0.0.1:1502` as Unit ID 1. Use **Stop Simulator** to terminate the child process. Closing the GUI also requests simulator shutdown.
+
+The GUI is a Modbus TCP client. It does not access or duplicate the process model directly. The Web SCADA remains an independent Modbus TCP client of the same simulator.
+
+The GUI polls the four Modbus data areas every 500 ms. Commands are written to the documented coil offsets, and setpoints are written to holding registers using the ×10 scaling convention. A successful write indicates Modbus write acceptance; observe status and process feedback to confirm the simulated response.
+
 ## Run the simulator
 
 From the repository root, with the virtual environment active:
