@@ -1562,7 +1562,7 @@
         :root { color-scheme:dark; --surface-raised:#1b2b43; --surface-soft:#0d192a; --header-bg:rgba(10,20,35,.96); }
         body[data-theme="light"] {
             color-scheme:light; --bg:#edf2f7; --panel:#fff; --panel-2:#f4f7fb; --panel-3:#e8eef5;
-            --border:#d4deea; --border-light:#c2cfdd; --text:#172b45; --muted:#60738b;
+            --border:#b8c7d8; --border-light:#a8b9cc; --text:#172b45; --muted:#526982;
             --surface-raised:#fff; --surface-soft:#eaf0f6; --header-bg:rgba(255,255,255,.97);
             background:radial-gradient(circle at top right,#e1edf8 0,var(--bg) 42%);
         }
@@ -1581,8 +1581,20 @@
         body[data-theme="light"] .faceplate-overlay { background:rgba(20,35,55,.25); }
         body[data-theme="light"] .faceplate-footer, body[data-theme="light"] footer { color:var(--muted); }
         body[data-theme="light"] .close-button:hover { background:#e6edf5;color:#172b45; }
-        .theme-toggle { display:inline-flex;align-items:center;gap:7px;padding:8px 11px;font-size:11px;white-space:nowrap; }
-        .zone { min-height:174px;display:flex;flex-direction:column;cursor:pointer;transition:border-color .16s,box-shadow .16s,transform .16s; }
+        .theme-toggle { display:inline-flex;align-items:center;gap:7px;padding:8px 11px;font-size:12px;font-weight:700;white-space:nowrap; }
+        .sidebar-theme-toggle { width:100%;justify-content:flex-start;margin:5px 0 12px;padding:9px 12px;border-color:var(--border-light); }
+        .zone { min-height:174px;display:flex;flex-direction:column;cursor:pointer;border-width:2px;transition:border-color .16s,box-shadow .16s,transform .16s; }
+        .zone-name { font-size:13px;font-weight:700; }
+        .zone .status { font-size:10px;font-weight:750; }
+        .zone .metric { font-size:11px;font-weight:600; }
+        .zone .metric strong { font-size:15px;font-weight:750; }
+        .zone-device { font-size:11px;font-weight:600; }
+        .protocol-chip { font-size:10px;font-weight:750; }
+        body[data-theme="light"] .zone { border-color:#a8b9cc; }
+        body[data-theme="light"] .zone:hover, body[data-theme="light"] .zone.is-selected { border-color:#477da9; }
+        .no-data { color:#ffd0d7;background:#5b1728;border:1px solid #8b3447; }
+        body[data-theme="light"] .no-data { color:#8b1e32;background:#f8dfe4;border-color:#d99aa7; }
+        .sidebar-theme-toggle:focus-visible { outline:2px solid var(--blue);outline-offset:2px; }
         .zone:hover { border-color:var(--blue);transform:translateY(-1px); }
         .zone.is-selected { border-color:var(--cyan);box-shadow:0 0 0 2px rgba(68,215,232,.18),0 8px 24px rgba(0,0,0,.12); }
         .zone[data-zone="01"] .bar + .zone-data { display:none; }
@@ -1654,8 +1666,6 @@
 
     </div>
 
-
-    <button id="theme-toggle" class="theme-toggle" type="button">☀ Light mode</button>
 
     <div class="top-status">
 
@@ -1735,6 +1745,8 @@
         <div class="nav">
             ⚙ Settings
         </div>
+
+        <button id="theme-toggle" class="theme-toggle sidebar-theme-toggle" type="button" aria-label="Toggle display theme">☀ Light mode</button>
 
 
         <div class="nav-title">
@@ -1983,7 +1995,7 @@
 
     <div class="zone-head">
         <span class="zone-name">Zone 02 • Courtyard</span>
-        <span id="z2-status" class="status warn">NO DATA</span>
+        <span id="z2-status" class="status no-data">NO DATA</span>
     </div>
 
     <div class="zone-data">
@@ -2008,7 +2020,7 @@
 
     <div class="zone-head">
         <span class="zone-name">Zone 03 • Roof Garden</span>
-        <span id="z3-status" class="status warn">NO DATA</span>
+        <span id="z3-status" class="status no-data">NO DATA</span>
     </div>
 
     <div class="zone-data">
@@ -2044,7 +2056,7 @@
 
     <div class="zone-head">
         <span class="zone-name">Zone 04 • East Garden</span>
-        <span id="z4-status" class="status warn">NO DATA</span>
+        <span id="z4-status" class="status no-data">NO DATA</span>
     </div>
 
     <div class="zone-data">
@@ -2248,7 +2260,7 @@
             <div>
 
                 <div class="card zone-details" id="zone-details-panel" aria-live="polite">
-                    <div class="section-head"><h3 id="detail-title">Zone 02 • Courtyard</h3><span id="detail-status" class="status warn">NO DATA</span></div>
+                    <div class="section-head"><h3 id="detail-title">Zone 02 • Courtyard</h3><span id="detail-status" class="status no-data">NO DATA</span></div>
                     <p class="detail-intro" id="detail-subtitle">Select a zone card to inspect its controller, protocol and process values.</p>
                     <div class="detail-grid" id="detail-grid"></div><div class="detail-actions" id="detail-actions"></div>
                     <div class="detail-hint" id="detail-hint">Selecting a zone only opens its details. It does not issue a process command.</div>
