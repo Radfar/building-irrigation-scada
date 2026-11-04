@@ -1,14 +1,12 @@
 """Main PySide6 window for the Zone 01 Python Modbus simulator."""
 
-import os
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QProcess, QThread, Signal
-from PySide6.QtGui import QFont
+from PySide6.QtCore import QProcess, QThread, Signal
 from PySide6.QtWidgets import (
     QCheckBox, QDoubleSpinBox, QFormLayout, QGridLayout, QGroupBox,
-    QHBoxLayout, QLabel, QMainWindow, QMessageBox, QPushButton,
+    QHBoxLayout, QLabel, QMainWindow, QPushButton,
     QPlainTextEdit, QVBoxLayout, QWidget,
 )
 
@@ -112,7 +110,7 @@ class SimulatorWindow(QMainWindow):
         status_box = QGroupBox("CONTROLLER STATUS")
         status_layout = QFormLayout(status_box)
         self.status_labels = {}
-        for key, label in [("running", "Pump running"), ("mode", "Operating mode"), ("permissive", "Process permissive"), ("fault", "Zone fault"), ("low_flow", "Low-flow trip"), ("stop_latched", "Operator STOP latch"), ("process_ok", "Process healthy")]:
+        for key, label in [("running", "Pump running"), ("mode", "Selected mode"), ("auto_active", "Automatic control"), ("permissive", "Process permissive"), ("fault", "Zone fault"), ("low_flow", "Low-flow trip"), ("stop_latched", "Operator STOP latch"), ("process_ok", "Process healthy")]:
             value = QLabel("NO DATA")
             value.setObjectName("stateUnknown")
             status_layout.addRow(label, value)
@@ -189,7 +187,7 @@ class SimulatorWindow(QMainWindow):
             return
         program = sys.executable
         self.server_process.setProgram(program)
-        self.server_process.setArguments(["-m", "src.main"])
+        self.server_process.setArguments(["-u", "-m", "src.main"])
         self.server_process.start()
         self._append_log("Starting Python Modbus TCP simulator process...")
         self.start_button.setEnabled(False)
@@ -265,7 +263,8 @@ class SimulatorWindow(QMainWindow):
 
         states = {
             "running": (di[1], "RUNNING" if di[1] else "STOPPED"),
-            "mode": (True, "AUTO" if di[5] else "MANUAL"),
+            "mode": (True, "AUTO SELECTED" if data["coils"][0] else "MANUAL SELECTED"),
+            "auto_active": (di[5], "ACTIVE" if di[5] else "INACTIVE"),
             "permissive": (di[3], "AVAILABLE" if di[3] else "NOT AVAILABLE"),
             "fault": (not di[2], "FAULT" if di[2] else "HEALTHY"),
             "low_flow": (not di[7], "TRIPPED" if di[7] else "NORMAL"),
