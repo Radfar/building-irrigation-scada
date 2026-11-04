@@ -1,12 +1,17 @@
 """Custom graphical process overview widgets."""
 
-from PySide6.QtCore import Qt, QRectF, QPointF
+from PySide6.QtCore import Qt, QRectF, QPointF, QSize
 from PySide6.QtGui import QPolygonF
 from PySide6.QtGui import QColor, QPainter, QPen, QBrush, QFont
 from PySide6.QtWidgets import QWidget
 
 
 class ProcessGraphic(QWidget):
+    """Process schematic drawn in a fixed logical coordinate system and scaled to fit."""
+
+    DESIGN_WIDTH = 760
+    DESIGN_HEIGHT = 260
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.level = 75.0
@@ -15,7 +20,11 @@ class ProcessGraphic(QWidget):
         self.fault = False
         self.valve = 0.0
         self.communication_ok = False
-        self.setMinimumHeight(260)
+        self.setMinimumHeight(190)
+        self.setMinimumWidth(0)
+
+    def sizeHint(self):
+        return QSize(self.DESIGN_WIDTH, self.DESIGN_HEIGHT)
 
     def set_process(self, level, flow, pump_running, fault, valve, communication_ok):
         self.level = max(0.0, min(100.0, float(level)))
@@ -30,6 +39,20 @@ class ProcessGraphic(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.fillRect(self.rect(), QColor("#111827"))
+
+        scale = min(
+            self.width() / self.DESIGN_WIDTH,
+            self.height() / self.DESIGN_HEIGHT,
+        )
+        if scale <= 0:
+            painter.end()
+            return
+
+        offset_x = (self.width() - self.DESIGN_WIDTH * scale) / 2
+        offset_y = (self.height() - self.DESIGN_HEIGHT * scale) / 2
+        painter.translate(offset_x, offset_y)
+        painter.scale(scale, scale)
+
         dark = True
         foreground = QColor("#e5edf7") if dark else QColor("#243247")
         muted = QColor("#94a3b8") if dark else QColor("#64748b")
