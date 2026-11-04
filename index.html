@@ -1613,6 +1613,13 @@
         @media(max-width:900px){.detail-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
         @media(max-width:700px){header{padding:0 14px;gap:10px}.top-status{gap:9px}.theme-toggle{padding:7px 8px}.content{padding:15px}}
 
+    
+        /* Zone card technology identity (separate from process status) */
+        .zone-identity { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;min-width:0; }
+        .zone-device { color:var(--muted);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+        .protocol-chip { flex:0 0 auto;padding:4px 7px;border:1px solid rgba(88,166,255,.28);border-radius:5px;background:rgba(88,166,255,.10);color:var(--blue);font-size:9px;font-weight:700;letter-spacing:.02em;white-space:nowrap; }
+        body[data-theme="light"] .protocol-chip { background:#e8f2fc;border-color:#c5d9ed;color:#245b8d; }
+
     </style>
 
 </head>
@@ -2809,6 +2816,7 @@
 <script src="js/zone02.js"></script>
 <script src="js/zone05.js"></script>
 <script src="js/zone01.js"></script>
+<script src="js/zone-protocol-labels.js"></script>
 <script src="js/hmi-ui.js"></script>
 </body>
 
