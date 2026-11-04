@@ -24,6 +24,7 @@ The 500 ms nominal runtime scan connects the command processor, water-process mo
 
 - Python 3.15.2 (initial development environment)
 - PyModbus 3.16.1
+- PySide6 (desktop GUI)
 
 ## Setup
 
@@ -147,7 +148,7 @@ industrial-water-modbus-simulator/
 4. Runtime integration and dynamic Modbus updates — implemented; local verification pending.
 5. Verify live Modbus behavior with a client.
 6. Connect the simulator to the Node.js Web SCADA and Ignition as independent Modbus TCP clients.
-7. Expand the process model with additional equipment behavior and diagnostics as the testbed evolves.
+7. Provide a PySide6 desktop GUI for local simulator operation and Modbus monitoring — initial implementation added; local GUI validation pending.\n8. Expand the process model with additional equipment behavior and diagnostics as the testbed evolves.
 
 ## Engineering notes
 
