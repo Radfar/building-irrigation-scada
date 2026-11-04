@@ -12,8 +12,25 @@ const meta = {
 let selected="02", theme="dark";
 function applyTheme(value){
  theme=value==="light"?"light":"dark"; document.body.dataset.theme=theme;
- const b=$("theme-toggle"); if(b)b.textContent=theme==="dark"?"☀ Light mode":"☾ Dark mode";
+ const b=$("theme-toggle"); if(b)b.textContent=theme==="dark"?"☀ Switch to light mode":"☾ Switch to dark mode";
  try{localStorage.setItem("scada-theme",theme)}catch(_){}
+}
+function toggleSettingsMenu(force){
+ const menu=$("settings-menu"), trigger=$("settings-menu-toggle");
+ if(!menu||!trigger)return;
+ const open=typeof force==="boolean"?force:menu.hidden;
+ menu.hidden=!open;
+ trigger.setAttribute("aria-expanded",String(open));
+}
+function showPage(page){
+ const overview=$("overview-page"), tank=$("water-tank-page");
+ const isTank=page==="water-tank";
+ if(overview)overview.hidden=isTank;
+ if(tank)tank.hidden=!isTank;
+ document.querySelectorAll(".nav[data-page]").forEach(item=>{
+  item.classList.toggle("active",item.dataset.page===page||(isTank&&item.dataset.page==="water-tank"));
+ });
+ toggleSettingsMenu(false);
 }
 function textValue(id,fallback="N/A"){
  const e=$(id); if(!e)return fallback; const v=e.textContent.trim(); return v&&v!=="--"?v:fallback;
@@ -90,7 +107,12 @@ function render(){
 
 function select(id){if(meta[id]){selected=id;render()}}
 document.addEventListener("click",e=>{
- if(e.target.closest("#theme-toggle")){applyTheme(theme==="dark"?"light":"dark");return}
+ if(e.target.closest("#theme-toggle")){applyTheme(theme==="dark"?"light":"dark");toggleSettingsMenu(false);return}
+ if(e.target.closest("#settings-menu-toggle")){toggleSettingsMenu();return}
+ if(e.target.closest("#settings-menu"))return;
+ if(!e.target.closest(".settings-menu-wrap"))toggleSettingsMenu(false);
+ const nav=e.target.closest(".nav[data-page]");
+ if(nav){showPage(nav.dataset.page);return}
  if(e.target.closest("#zone-filter-select")) return;
  const proxy=e.target.closest("[data-proxy]");
  if(proxy){const target=$(proxy.dataset.proxy);if(target&&!target.disabled)target.click();return}
@@ -103,12 +125,15 @@ document.addEventListener("change",e=>{
  }
 });
 document.addEventListener("keydown",e=>{
+ if(e.target.id==="settings-menu-toggle"&&(e.key==="Enter"||e.key===" ")){e.preventDefault();toggleSettingsMenu();return}
+ const nav=e.target.closest?.(".nav[data-page]");
+ if(nav&&(e.key==="Enter"||e.key===" ")){e.preventDefault();showPage(nav.dataset.page);return}
  const card=e.target.closest?.(".zone[data-zone]");
  if(card&&(e.key==="Enter"||e.key===" ")){e.preventDefault();select(card.dataset.zone)}
 });
 function init(){
  let saved="dark";try{saved=localStorage.getItem("scada-theme")||"dark"}catch(_){}
- applyTheme(saved);render();
+ applyTheme(saved);render();showPage("overview");
  const filter=$("zone-filter-select");
  let savedFilter="all";try{savedFilter=localStorage.getItem("scada-zone-filter")||"all"}catch(_){}
  if(filter) filter.value=savedFilter;
