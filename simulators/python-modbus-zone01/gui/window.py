@@ -3,11 +3,11 @@
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QProcess, QThread, Signal
+from PySide6.QtCore import QProcess, QThread, Signal, Qt
 from PySide6.QtWidgets import (
     QCheckBox, QDoubleSpinBox, QFormLayout, QGridLayout, QGroupBox,
     QHBoxLayout, QLabel, QMainWindow, QPushButton,
-    QPlainTextEdit, QVBoxLayout, QWidget,
+    QPlainTextEdit, QScrollArea, QSizePolicy, QVBoxLayout, QWidget,
 )
 
 from .modbus_worker import ModbusWorker
@@ -24,7 +24,12 @@ class SimulatorWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Industrial Water Management | Zone 01 Simulator")
-        self.resize(1120, 790)
+        self.setMinimumSize(600, 440)
+        available = self.screen().availableGeometry()
+        self.resize(
+            max(600, min(1180, available.width() - 40)),
+            max(440, min(900, available.height() - 70)),
+        )
         self.server_process = QProcess(self)
         self.server_process.setWorkingDirectory(str(SIMULATOR_ROOT))
         self.server_process.readyReadStandardOutput.connect(self._read_stdout)
@@ -51,9 +56,10 @@ class SimulatorWindow(QMainWindow):
     def _build_ui(self):
         root = QWidget()
         root.setObjectName("root")
+        root.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         layout = QVBoxLayout(root)
-        layout.setContentsMargins(20, 18, 20, 18)
-        layout.setSpacing(14)
+        layout.setContentsMargins(14, 12, 14, 12)
+        layout.setSpacing(10)
 
         header = QHBoxLayout()
         title = QLabel("ZONE 01  |  WATER TANK SIMULATOR")
@@ -81,15 +87,17 @@ class SimulatorWindow(QMainWindow):
         layout.addLayout(toolbar)
 
         self.graphic = ProcessGraphic()
+        self.graphic.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         graphic_box = QGroupBox("LIVE PROCESS OVERVIEW")
         graphic_layout = QVBoxLayout(graphic_box)
         graphic_layout.addWidget(self.graphic)
         layout.addWidget(graphic_box)
 
-        grid = QGridLayout()
-        grid.setSpacing(12)
+        self.data_grid = QGridLayout()
+        self.data_grid.setSpacing(10)
         self.value_labels = {}
         measurement_box = QGroupBox("PROCESS MEASUREMENTS")
+        self.measurement_box = measurement_box
         measurement_grid = QGridLayout(measurement_box)
         measurements = [("Tank level", "tank", "%"), ("Flow rate", "flow", "L/min"), ("Pump frequency", "frequency", "Hz"), ("Pump speed", "speed", "%"), ("Pump current", "current", "A"), ("Valve position", "valve", "%")]
         for index, (label, key, unit) in enumerate(measurements):
@@ -105,9 +113,10 @@ class SimulatorWindow(QMainWindow):
             cell.addWidget(unit_label)
             measurement_grid.addLayout(cell, index // 3, index % 3)
             self.value_labels[key] = value
-        grid.addWidget(measurement_box, 0, 0)
+        self.data_grid.addWidget(measurement_box, 0, 0)
 
         status_box = QGroupBox("CONTROLLER STATUS")
+        self.status_box = status_box
         status_layout = QFormLayout(status_box)
         self.status_labels = {}
         for key, label in [("running", "Pump running"), ("mode", "Selected mode"), ("auto_active", "Automatic control"), ("permissive", "Process permissive"), ("fault", "Zone fault"), ("low_flow", "Low-flow trip"), ("stop_latched", "Operator STOP latch"), ("process_ok", "Process healthy")]:
@@ -115,11 +124,12 @@ class SimulatorWindow(QMainWindow):
             value.setObjectName("stateUnknown")
             status_layout.addRow(label, value)
             self.status_labels[key] = value
-        grid.addWidget(status_box, 0, 1)
-        layout.addLayout(grid)
+        self.data_grid.addWidget(status_box, 0, 1)
+        layout.addLayout(self.data_grid)
 
-        bottom = QGridLayout()
+        self.bottom_grid = QGridLayout()
         control_box = QGroupBox("OPERATOR COMMANDS")
+        self.control_box = control_box
         control_layout = QGridLayout(control_box)
         self.auto_check = QCheckBox("AUTO mode (unchecked = MANUAL)")
         self.auto_check.toggled.connect(lambda checked: self.command_coil.emit(0, checked))
@@ -129,9 +139,10 @@ class SimulatorWindow(QMainWindow):
             button = QPushButton(label)
             button.clicked.connect(lambda _checked=False, a=address: self.command_coil.emit(a, True))
             control_layout.addWidget(button, 1 + index // 2, index % 2)
-        bottom.addWidget(control_box, 0, 0)
+        self.bottom_grid.addWidget(control_box, 0, 0)
 
         setpoint_box = QGroupBox("PROCESS SETPOINTS  |  WRITE TO HOLDING REGISTERS")
+        self.setpoint_box = setpoint_box
         setpoint_layout = QFormLayout(setpoint_box)
         self.setpoint_controls = []
         for label, address, maximum, suffix in [("Pump frequency", 0, 50.0, " Hz"), ("Valve position", 1, 100.0, " %"), ("Low-flow threshold", 2, 100.0, " L/min"), ("Tank low threshold", 3, 100.0, " %"), ("Tank high threshold", 4, 100.0, " %")]:
@@ -148,8 +159,8 @@ class SimulatorWindow(QMainWindow):
             row.addWidget(apply_button)
             setpoint_layout.addRow(label, row)
             self.setpoint_controls.append(spin)
-        bottom.addWidget(setpoint_box, 0, 1)
-        layout.addLayout(bottom)
+        self.bottom_grid.addWidget(setpoint_box, 0, 1)
+        layout.addLayout(self.bottom_grid)
 
         log_box = QGroupBox("SIMULATOR / COMMUNICATION EVENT LOG")
         log_layout = QVBoxLayout(log_box)
@@ -160,9 +171,19 @@ class SimulatorWindow(QMainWindow):
         log_layout.addWidget(self.log)
         layout.addWidget(log_box)
 
-        self.setCentralWidget(root)
+        scroll_area = QScrollArea()
+        scroll_area.setObjectName("contentScrollArea")
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setFrameShape(QScrollArea.Shape.NoFrame)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll_area.setWidget(root)
+        self.setCentralWidget(scroll_area)
+        self._apply_responsive_layout()
+
         self.setStyleSheet("""
             QWidget#root { background: #0b1220; color: #e5edf7; font-family: 'Segoe UI'; }
+            QScrollArea#contentScrollArea { background: #0b1220; border: none; }
             QLabel#pageTitle { color: #f8fafc; font-size: 21px; font-weight: 700; }
             QGroupBox { border: 1px solid #334155; border-radius: 9px; margin-top: 10px; padding: 12px; font-weight: 700; color: #cbd5e1; }
             QGroupBox::title { subcontrol-origin: margin; left: 12px; padding: 0 5px; }
@@ -181,6 +202,36 @@ class SimulatorWindow(QMainWindow):
             QPlainTextEdit { background: #080e19; border: 1px solid #263449; border-radius: 6px; color: #a7f3d0; font-family: Consolas; font-size: 11px; }
             QCheckBox { color: #e2e8f0; font-weight: 600; }
         """)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if hasattr(self, "data_grid"):
+            self._apply_responsive_layout()
+
+    def _apply_responsive_layout(self):
+        """Stack the major panels when the available window width is narrow."""
+        narrow = self.width() < 860
+
+        for widget in (self.measurement_box, self.status_box):
+            self.data_grid.removeWidget(widget)
+        for widget in (self.control_box, self.setpoint_box):
+            self.bottom_grid.removeWidget(widget)
+
+        if narrow:
+            self.data_grid.addWidget(self.measurement_box, 0, 0)
+            self.data_grid.addWidget(self.status_box, 1, 0)
+            self.bottom_grid.addWidget(self.control_box, 0, 0)
+            self.bottom_grid.addWidget(self.setpoint_box, 1, 0)
+        else:
+            self.data_grid.addWidget(self.measurement_box, 0, 0)
+            self.data_grid.addWidget(self.status_box, 0, 1)
+            self.bottom_grid.addWidget(self.control_box, 0, 0)
+            self.bottom_grid.addWidget(self.setpoint_box, 0, 1)
+
+        self.data_grid.setColumnStretch(0, 1)
+        self.data_grid.setColumnStretch(1, 1 if not narrow else 0)
+        self.bottom_grid.setColumnStretch(0, 1)
+        self.bottom_grid.setColumnStretch(1, 1 if not narrow else 0)
 
     def start_simulator(self):
         if self.server_process.state() != QProcess.ProcessState.NotRunning:
