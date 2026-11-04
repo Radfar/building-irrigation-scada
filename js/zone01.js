@@ -15,7 +15,7 @@
   function renderUnavailable() {
     snapshot = null;
     const status = $("z1-status");
-    if (status) { status.textContent = "NO DATA"; status.className = "status alarm"; }
+    if (status) { status.textContent = "NO DATA"; status.className = "status no-data"; }
     ["z1-tank", "z1-flow", "z1-valve", "z1-frequency", "z1-pump", "z1-mode", "z1-latch"]
       .forEach(id => { if ($(id)) $(id).textContent = "--"; });
     ["z1-btn-start", "z1-btn-stop", "z1-btn-mode", "z1-btn-reset", "z1-btn-reenable"]
