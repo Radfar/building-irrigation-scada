@@ -21,6 +21,7 @@ SIMULATOR_ROOT = Path(__file__).resolve().parents[1]
 class SimulatorWindow(QMainWindow):
     command_coil = Signal(int, bool)
     command_register = Signal(int, int)
+    shutdown_worker = Signal()
 
     def __init__(self):
         super().__init__()
@@ -43,6 +44,7 @@ class SimulatorWindow(QMainWindow):
         self.worker.log_message.connect(self._append_log)
         self.command_coil.connect(self.worker.write_coil)
         self.command_register.connect(self.worker.write_register)
+        self.shutdown_worker.connect(self.worker.stop)
         self.worker_thread.start()
 
         self._build_ui()
@@ -298,7 +300,7 @@ class SimulatorWindow(QMainWindow):
             self.server_process.terminate()
             if not self.server_process.waitForFinished(2000):
                 self.server_process.kill()
-        self.worker.stop()
+        self.shutdown_worker.emit()
         self.worker_thread.quit()
         self.worker_thread.wait(2000)
         event.accept()
