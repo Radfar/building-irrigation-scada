@@ -1594,6 +1594,35 @@
         body[data-theme="light"] .zone:hover, body[data-theme="light"] .zone.is-selected { border-color:#477da9; }
         .no-data { color:#ffd0d7;background:#5b1728;border:1px solid #8b3447; }
         body[data-theme="light"] .no-data { color:#8b1e32;background:#f8dfe4;border-color:#d99aa7; }
+        /* Settings dropdown menu */
+        .settings-menu-wrap { position:relative; }
+        .menu-caret { float:right;font-size:11px;opacity:.8; }
+        .settings-menu { position:absolute;left:8px;top:calc(100% - 1px);z-index:50;width:190px;padding:10px;background:var(--panel);border:1px solid var(--border-light);border-radius:9px;box-shadow:0 14px 32px rgba(0,0,0,.28); }
+        .settings-menu[hidden] { display:none !important; }
+        .settings-menu-title { padding:3px 5px 8px;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase; }
+        .settings-menu button { width:100%;justify-content:flex-start; }
+        body[data-theme="light"] .settings-menu { background:#fff;border:1px solid #71869d;box-shadow:0 14px 30px rgba(35,55,75,.2); }
+        /* Higher-contrast zone-card outlines in both themes */
+        .zone { border:2.5px solid #657d98;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035); }
+        body[data-theme="light"] .zone { border:2.5px solid #71869d;box-shadow:0 1px 3px rgba(27,48,70,.10); }
+        body[data-theme="light"] .zone:hover, body[data-theme="light"] .zone.is-selected { border-color:#245b8d;box-shadow:0 0 0 2px rgba(36,91,141,.16),0 5px 16px rgba(27,48,70,.12); }
+        .zone:hover { border-color:#75b8f5; }
+        .zone.is-selected { border-color:var(--cyan); }
+        /* Water Tank process page */
+        #water-tank-page[hidden], #overview-page[hidden] { display:none !important; }
+        .tank-page-grid { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:14px; }
+        .tank-level-card { min-height:220px; }
+        .tank-level-reading { margin:22px 0 14px;color:var(--text);font-size:56px;font-weight:800;letter-spacing:-.04em; }
+        .tank-level-reading span { color:var(--muted);font-size:24px;font-weight:700; }
+        .tank-level-track { height:18px;background:#263b55;border:1px solid #506985;border-radius:20px;overflow:hidden; }
+        .tank-level-track span { display:block;width:0;height:100%;background:linear-gradient(90deg,#2585c7,#35c7d0);transition:width .3s ease; }
+        .tank-level-caption { margin-top:10px;color:var(--muted);font-size:11px;font-weight:600; }
+        .tank-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        .tank-actions { margin-top:18px; }
+        .tank-actions button { min-height:42px;font-size:11px;font-weight:750; }
+        body[data-theme="light"] .tank-level-track { background:#d8e3ee;border-color:#8096ad; }
+        @media(max-width:900px){.tank-page-grid{grid-template-columns:1fr}}
+
         .sidebar-theme-toggle:focus-visible { outline:2px solid var(--blue);outline-offset:2px; }
         .zone:hover { border-color:var(--blue);transform:translateY(-1px); }
         .zone.is-selected { border-color:var(--cyan);box-shadow:0 0 0 2px rgba(68,215,232,.18),0 8px 24px rgba(0,0,0,.12); }
@@ -1709,12 +1738,12 @@
         </div>
 
 
-        <div class="nav active">
+        <div class="nav active" data-page="overview" role="button" tabindex="0">
             ● Site Overview
         </div>
 
 
-        <div class="nav">
+        <div class="nav" data-page="overview" role="button" tabindex="0">
             ▣ Irrigation Zones
         </div>
 
@@ -1727,7 +1756,7 @@
         </div>
 
 
-        <div class="nav">
+        <div class="nav" data-page="water-tank" role="button" tabindex="0">
             ≈ Water Tank
         </div>
 
@@ -1742,11 +1771,15 @@
         </div>
 
 
-        <div class="nav">
-            ⚙ Settings
+        <div class="settings-menu-wrap">
+            <div class="nav" id="settings-menu-toggle" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">
+                ⚙ Settings <span class="menu-caret">▾</span>
+            </div>
+            <div id="settings-menu" class="settings-menu" hidden>
+                <div class="settings-menu-title">Appearance</div>
+                <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle display theme">☀ Light mode</button>
+            </div>
         </div>
-
-        <button id="theme-toggle" class="theme-toggle sidebar-theme-toggle" type="button" aria-label="Toggle display theme">☀ Light mode</button>
 
 
         <div class="nav-title">
@@ -1777,6 +1810,7 @@
     ============================================================= -->
 
     <section class="content">
+        <div id="overview-page">
 
 
         <!-- PAGE TITLE -->
@@ -2551,6 +2585,66 @@
             No physical equipment is connected.
 
         </footer>
+        </div>
+
+        <!-- WATER TANK PAGE: live Zone 01 process and operator interface -->
+        <div id="water-tank-page" hidden>
+            <div class="page-title">
+                <div>
+                    <h2>Water Tank</h2>
+                    <p>Zone 01 · Water storage and pump process · Python simulator / Modbus TCP</p>
+                </div>
+                <span id="wt-status" class="status no-data">NO DATA</span>
+            </div>
+
+            <div class="tank-page-grid">
+                <div class="card tank-level-card">
+                    <div class="section-head">
+                        <h3>Tank Level</h3>
+                        <span id="wt-comm" class="status no-data">COMMUNICATION: NO DATA</span>
+                    </div>
+                    <div class="tank-level-reading"><strong id="wt-tank-level">--</strong><span> %</span></div>
+                    <div class="tank-level-track"><span id="wt-tank-bar"></span></div>
+                    <div class="tank-level-caption">Live level measurement · Zone 01</div>
+                </div>
+
+                <div class="card">
+                    <div class="section-head"><h3>Process Measurements</h3><span class="kpi-label">Live values</span></div>
+                    <div class="detail-grid tank-metrics">
+                        <div class="detail-item"><span>Water flow</span><strong id="wt-flow">--</strong></div>
+                        <div class="detail-item"><span>Outlet valve position</span><strong id="wt-valve">--</strong></div>
+                        <div class="detail-item"><span>Pump frequency</span><strong id="wt-frequency">--</strong></div>
+                        <div class="detail-item"><span>Pump state</span><strong id="wt-pump">--</strong></div>
+                        <div class="detail-item"><span>Operating mode</span><strong id="wt-mode">--</strong></div>
+                        <div class="detail-item"><span>Process permissive</span><strong id="wt-permissive">--</strong></div>
+                        <div class="detail-item"><span>Pump fault</span><strong id="wt-fault">--</strong></div>
+                        <div class="detail-item"><span>Operator STOP latch</span><strong id="wt-latch">--</strong></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="section-head"><h3>Pump & Process Control</h3><span class="kpi-label">Zone 01 commands</span></div>
+                    <div class="detail-actions tank-actions">
+                        <button id="wt-btn-start" onclick="zone1Command('start')" disabled>▶ Start</button>
+                        <button id="wt-btn-stop" onclick="zone1Command('stop')" disabled>■ Stop</button>
+                        <button id="wt-btn-mode" onclick="zone1ToggleMode()" disabled>--</button>
+                        <button id="wt-btn-reset" onclick="zone1Command('faultreset')" disabled>Fault reset</button>
+                        <button id="wt-btn-reenable" onclick="zone1Command('reenable')" disabled>Re-enable</button>
+                    </div>
+                    <p class="detail-hint">Commands are sent through the Zone 01 REST endpoint to the Node.js Modbus TCP driver and Python process simulator. Simulator interlocks and STOP-latch logic remain authoritative.</p>
+                </div>
+
+                <div class="card">
+                    <div class="section-head"><h3>Communication & Device</h3><span class="protocol-chip">MODBUS TCP</span></div>
+                    <div class="detail-grid tank-metrics">
+                        <div class="detail-item"><span>Data quality</span><strong id="wt-quality">--</strong></div>
+                        <div class="detail-item"><span>Controller / process source</span><strong>Python water-process simulator</strong></div>
+                        <div class="detail-item"><span>Interface</span><strong>Node.js REST API → Modbus TCP</strong></div>
+                        <div class="detail-item"><span>Zone identity</span><strong>Zone 01 · Water Storage Tank</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </section>
 
