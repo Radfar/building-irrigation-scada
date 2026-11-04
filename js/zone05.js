@@ -24,7 +24,7 @@
 
     function renderUnavailable() {
         zone5 = null;
-        setStatus('NO DATA', 'alarm');
+        setStatus('NO DATA', 'no-data');
         ['z5-moisture', 'z5-flow', 'z5-valve', 'z5-tank', 'z5-pump', 'z5-mode']
             .forEach(id => { if ($(id)) $(id).textContent = '--'; });
         if ($('z5-bar')) $('z5-bar').style.width = '0%';
