@@ -22,13 +22,14 @@ function toggleSettingsMenu(force){
  menu.hidden=!open;
  trigger.setAttribute("aria-expanded",String(open));
 }
-function showPage(page){
+function showPage(page,activeItem){
  const overview=$("overview-page"), tank=$("water-tank-page");
  const isTank=page==="water-tank";
  if(overview)overview.hidden=isTank;
  if(tank)tank.hidden=!isTank;
+ const selectedItem=activeItem||document.querySelector('.nav[data-page="'+page+'"]');
  document.querySelectorAll(".nav[data-page]").forEach(item=>{
-  item.classList.toggle("active",item.dataset.page===page||(isTank&&item.dataset.page==="water-tank"));
+  item.classList.toggle("active",item===selectedItem);
  });
  toggleSettingsMenu(false);
 }
@@ -112,7 +113,7 @@ document.addEventListener("click",e=>{
  if(e.target.closest("#settings-menu"))return;
  if(!e.target.closest(".settings-menu-wrap"))toggleSettingsMenu(false);
  const nav=e.target.closest(".nav[data-page]");
- if(nav){showPage(nav.dataset.page);return}
+ if(nav){showPage(nav.dataset.page,nav);return}
  if(e.target.closest("#zone-filter-select")) return;
  const proxy=e.target.closest("[data-proxy]");
  if(proxy){const target=$(proxy.dataset.proxy);if(target&&!target.disabled)target.click();return}
@@ -127,7 +128,7 @@ document.addEventListener("change",e=>{
 document.addEventListener("keydown",e=>{
  if(e.target.id==="settings-menu-toggle"&&(e.key==="Enter"||e.key===" ")){e.preventDefault();toggleSettingsMenu();return}
  const nav=e.target.closest?.(".nav[data-page]");
- if(nav&&(e.key==="Enter"||e.key===" ")){e.preventDefault();showPage(nav.dataset.page);return}
+ if(nav&&(e.key==="Enter"||e.key===" ")){e.preventDefault();showPage(nav.dataset.page,nav);return}
  const card=e.target.closest?.(".zone[data-zone]");
  if(card&&(e.key==="Enter"||e.key===" ")){e.preventDefault();select(card.dataset.zone)}
 });
