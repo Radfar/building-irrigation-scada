@@ -1608,6 +1608,33 @@
         body[data-theme="light"] .zone:hover, body[data-theme="light"] .zone.is-selected { border-color:#245b8d;box-shadow:0 0 0 2px rgba(36,91,141,.16),0 5px 16px rgba(27,48,70,.12); }
         .zone:hover { border-color:#75b8f5; }
         .zone.is-selected { border-color:var(--cyan); }
+
+        /* Water Tank process schematic */
+        .tank-schematic-card { grid-column:1 / -1; }
+        .tank-schematic-wrap { width:100%;overflow:hidden; }
+        .tank-schematic { display:block;width:100%;height:auto;max-height:250px; }
+        .schematic-pipe { fill:none;stroke:#71869d;stroke-width:8;stroke-linecap:round; }
+        .schematic-flow { fill:none;stroke:#42c8d5;stroke-width:4;stroke-linecap:round;stroke-dasharray:9 10;opacity:0; }
+        .schematic-flow.is-running { opacity:1;animation:wt-flow-pulse 1s linear infinite; }
+        @keyframes wt-flow-pulse { to { stroke-dashoffset:-38; } }
+        .schematic-tank-shell { fill:var(--panel-2);stroke:#7890aa;stroke-width:3; }
+        .schematic-water { fill:url(#wt-water-gradient); }
+        .tank-schematic defs { --water-a:#2594cf; }
+        .schematic-tank-rim { fill:none;stroke:#9bb0c6;stroke-width:3; }
+        .schematic-mark { fill:none;stroke:#9bb0c6;stroke-width:2; }
+        .schematic-label { fill:var(--muted);font-size:11px;font-weight:800;letter-spacing:.04em; }
+        .schematic-value { fill:var(--text);font-size:12px;font-weight:800; }
+        .schematic-caption { fill:var(--muted);font-size:10px;font-weight:600; }
+        .schematic-pump { fill:var(--panel-2);stroke:#7890aa;stroke-width:3; }
+        .schematic-pump.is-running { fill:rgba(38,166,120,.16);stroke:#2aa879; }
+        .schematic-pump.is-fault { fill:rgba(190,54,77,.16);stroke:#c34b60; }
+        .schematic-pump-blade { fill:#42c8d5; }
+        .schematic-valve { fill:var(--panel-2);stroke:#7890aa;stroke-width:3;stroke-linejoin:round; }
+        .schematic-valve-stem { fill:none;stroke:#9bb0c6;stroke-width:3;stroke-linecap:round; }
+        body[data-theme="light"] .schematic-tank-shell, body[data-theme="light"] .schematic-pump, body[data-theme="light"] .schematic-valve { fill:#f3f7fb; }
+        body[data-theme="light"] .schematic-pipe { stroke:#8296aa; }
+        @media(max-width:600px){.tank-schematic{min-width:460px}.tank-schematic-wrap{overflow-x:auto}}
+
         /* Water Tank process page */
         #water-tank-page[hidden], #overview-page[hidden] { display:none !important; }
         .tank-page-grid { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:14px; }
@@ -2598,6 +2625,38 @@
             </div>
 
             <div class="tank-page-grid">
+                <div class="card tank-schematic-card">
+                    <div class="section-head">
+                        <h3>Water Transfer Process</h3>
+                        <span class="kpi-label">T-01 → P-01 → V-01</span>
+                    </div>
+                    <div class="tank-schematic-wrap">
+                        <svg class="tank-schematic" viewBox="0 0 560 220" role="img" aria-label="Water tank connected to pump and outlet valve">
+                            <defs>
+                                <clipPath id="wt-tank-clip"><rect x="42" y="36" width="104" height="132" rx="13"/></clipPath>
+                            </defs>
+                            <path class="schematic-pipe" d="M146 104 H226 M286 104 H385 M425 104 H510"/>
+                            <path id="wt-flow-line" class="schematic-flow" d="M146 104 H226 M286 104 H385 M425 104 H510"/>
+                            <rect class="schematic-tank-shell" x="38" y="32" width="112" height="140" rx="16"/>
+                            <rect id="wt-tank-liquid" class="schematic-water" x="42" y="168" width="104" height="0" clip-path="url(#wt-tank-clip)"/>
+                            <path class="schematic-tank-rim" d="M38 48 Q94 24 150 48"/>
+                            <path class="schematic-mark" d="M150 68 H160 M150 100 H160 M150 132 H160"/>
+                            <text class="schematic-label" x="94" y="20" text-anchor="middle">T-01 · STORAGE TANK</text>
+                            <text id="wt-schematic-level" class="schematic-value" x="94" y="195" text-anchor="middle">-- %</text>
+                            <circle id="wt-schematic-pump" class="schematic-pump" cx="256" cy="104" r="30"/>
+                            <path class="schematic-pump-blade" d="M245 91 L269 104 L245 117 Z"/>
+                            <text class="schematic-label" x="256" y="57" text-anchor="middle">P-01 · PUMP</text>
+                            <text id="wt-schematic-pump-state" class="schematic-value" x="256" y="158" text-anchor="middle">--</text>
+                            <path class="schematic-valve" d="M385 88 L405 104 L385 120 Z M425 88 L405 104 L425 120 Z"/>
+                            <path class="schematic-valve-stem" d="M405 88 V70 M393 70 H417"/>
+                            <text class="schematic-label" x="405" y="48" text-anchor="middle">V-01 · OUTLET</text>
+                            <text id="wt-schematic-valve" class="schematic-value" x="405" y="158" text-anchor="middle">--</text>
+                            <text id="wt-schematic-flow" class="schematic-value" x="470" y="137" text-anchor="middle">-- L/min</text>
+                            <text class="schematic-caption" x="280" y="210" text-anchor="middle">Illustrative process schematic · live Zone 01 values</text>
+                        </svg>
+                    </div>
+                </div>
+
                 <div class="card tank-level-card">
                     <div class="section-head">
                         <h3>Tank Level</h3>
