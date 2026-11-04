@@ -29,7 +29,7 @@ class ProcessGraphic(QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.fillRect(self.rect(), QColor("#111827") if self.palette().color(self.backgroundRole()).lightness() < 128 else QColor("#f4f7fb"))
+        painter.fillRect(self.rect(), QColor("#111827"))
         dark = True
         foreground = QColor("#e5edf7") if dark else QColor("#243247")
         muted = QColor("#94a3b8") if dark else QColor("#64748b")
