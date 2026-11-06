@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zone 01 — Water Process Simulator</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">INDUSTRIAL WATER MANAGEMENT · ZONE 01</div>
+      <h1>Water Process Simulator</h1>
+    </div>
+    <div id="connection" class="status-pill offline">● Disconnected</div>
+  </header>
+
+  <main>
+    <section class="process-card">
+      <div class="section-title">
+        <div>
+          <span class="eyebrow">PROCESS OVERVIEW</span>
+          <h2>Tank → Pump → Valve → Flow</h2>
+        </div>
+        <div id="mode" class="mode-badge">MANUAL</div>
+      </div>
+
+      <div class="process-flow">
+        <div class="process-node tank-node">
+          <div class="node-label">TANK</div>
+          <div class="tank">
+            <div id="tank-fill" class="tank-fill"></div>
+            <span id="tank-level">--%</span>
+          </div>
+          <div class="value" id="tank-state">--</div>
+        </div>
+
+        <div class="flow-line"><span id="flow-value">-- L/min</span></div>
+
+        <div class="process-node pump-node">
+          <div class="node-icon">P</div>
+          <div class="node-label">PUMP P01</div>
+          <div class="value" id="pump-state">STOPPED</div>
+          <div class="muted" id="pump-frequency">-- Hz</div>
+        </div>
+
+        <div class="flow-line"><span>→</span></div>
+
+        <div class="process-node valve-node">
+          <div class="node-icon">V</div>
+          <div class="node-label">VALVE V01</div>
+          <div class="value" id="valve-value">--%</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <div class="section-title">
+          <div><span class="eyebrow">LIVE MEASUREMENTS</span><h2>Process Data</h2></div>
+        </div>
+        <div class="metrics">
+          <div class="metric"><span>Tank Level</span><strong id="m-level">--</strong><small>%</small></div>
+          <div class="metric"><span>Flow</span><strong id="m-flow">--</strong><small>L/min</small></div>
+          <div class="metric"><span>Pump Frequency</span><strong id="m-frequency">--</strong><small>Hz</small></div>
+          <div class="metric"><span>Pump Speed</span><strong id="m-speed">--</strong><small>%</small></div>
+          <div class="metric"><span>Valve Position</span><strong id="m-valve">--</strong><small>%</small></div>
+          <div class="metric"><span>Pump Current</span><strong id="m-current">--</strong><small>A</small></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="section-title">
+          <div><span class="eyebrow">CONTROLLER STATUS</span><h2>State & Interlocks</h2></div>
+        </div>
+        <div id="status-grid" class="status-grid"></div>
+      </article>
+    </section>
+
+    <section class="grid operator-grid">
+      <article class="card">
+        <div class="section-title">
+          <div><span class="eyebrow">OPERATOR CONTROL</span><h2>Commands</h2></div>
+        </div>
+        <div class="controls">
+          <label class="switch-row"><span>Automatic Mode</span><input id="auto" type="checkbox"><span class="switch"></span></label>
+          <div class="button-row">
+            <button data-command="start" class="primary">START</button>
+            <button data-command="stop" class="danger">STOP</button>
+          </div>
+          <div class="button-row">
+            <button data-command="faultReset">FAULT RESET</button>
+            <button data-command="reenable">RE-ENABLE</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="section-title">
+          <div><span class="eyebrow">SETPOINTS</span><h2>Process Settings</h2></div>
+        </div>
+        <form id="setpoints" class="setpoints">
+          <label>Pump Frequency <input name="pumpSpeed" type="number" step="0.1" min="0" value="45"><span>Hz</span></label>
+          <label>Valve Position <input name="valvePosition" type="number" step="0.1" min="0" value="100"><span>%</span></label>
+          <label>Low Flow <input name="flowLow" type="number" step="0.1" min="0" value="5"><span>L/min</span></label>
+          <label>Tank Low <input name="tankLevelLow" type="number" step="0.1" min="0" value="20"><span>%</span></label>
+          <label>Tank High <input name="tankLevelHigh" type="number" step="0.1" min="0" value="90"><span>%</span></label>
+          <button type="submit" class="primary">APPLY SETPOINTS</button>
+        </form>
+      </article>
+    </section>
+
+    <div id="message" class="message" hidden></div>
+  </main>
+
+  <footer>
+    <span>Node.js · Express · WebSocket · Modbus TCP</span>
+    <span id="last-update">Last update: --</span>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>
