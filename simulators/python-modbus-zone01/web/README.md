@@ -27,9 +27,10 @@ The Python simulator remains authoritative for the water-process model and contr
 
 ## Run
 
-Terminal 1:
+From the Web SCADA repository root, Terminal 1:
 
 ```powershell
+cd simulators/python-modbus-zone01
 .\.venv\Scripts\Activate.ps1
 python -m src.main
 ```
